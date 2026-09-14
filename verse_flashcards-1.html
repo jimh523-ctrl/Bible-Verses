@@ -1,0 +1,2242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Verse Pack Flashcards</title>
+<style>
+:root{
+  --bg:#f4efe6;
+  --surface:#ffffff;
+  --surface-2:#faf7f0;
+  --text:#231f1a;
+  --text-dim:#6b6255;
+  --border:#ddd3c0;
+  --accent:#7a2e2e;
+  --accent-2:#9c4a2f;
+  --good:#2e6b3e;
+  --good-bg:#e4f2e6;
+  --bad:#a3312a;
+  --bad-bg:#fbe7e5;
+  --chip-bg:#efe6d5;
+  --chip-text:#5b4f3a;
+  --shadow: 0 2px 10px rgba(40,30,10,0.08), 0 1px 2px rgba(40,30,10,0.06);
+  --radius: 14px;
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
+  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1712;
+    --surface:#252019;
+    --surface-2:#2b251d;
+    --text:#f1ebe0;
+    --text-dim:#b3a894;
+    --border:#3c3327;
+    --accent:#e0a6a0;
+    --accent-2:#e2b48f;
+    --good:#7fd196;
+    --good-bg:#1e3324;
+    --bad:#f0938c;
+    --bad-bg:#3a211f;
+    --chip-bg:#332c21;
+    --chip-text:#d8cbb0;
+    --shadow: 0 2px 10px rgba(0,0,0,0.35);
+  }
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#app{max-width:560px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;}
+.topbar{
+  position:sticky;top:0;z-index:20;
+  background:var(--bg);
+  padding:14px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.topbar h1{font-size:17px;margin:0;font-weight:700;letter-spacing:.2px;}
+.topbar .sub{font-size:11.5px;color:var(--text-dim);margin-top:1px;}
+.iconbtn{
+  border:none;background:var(--surface);color:var(--text);
+  width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;box-shadow:var(--shadow);cursor:pointer;
+}
+main{flex:1;padding:14px 16px 90px;}
+.hide{display:none !important;}
+
+/* bottom nav */
+.bottomnav{
+  position:sticky;bottom:0;z-index:20;
+  display:flex;background:var(--surface);border-top:1px solid var(--border);
+  padding:6px 6px calc(6px + env(safe-area-inset-bottom));
+}
+.bottomnav button{
+  flex:1;border:none;background:none;color:var(--text-dim);
+  font-family:var(--sans);font-size:11px;padding:6px 2px 4px;border-radius:10px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;
+}
+.bottomnav button .ic{font-size:19px;}
+.bottomnav button.active{color:var(--accent);font-weight:700;}
+
+/* cards / sections */
+.section{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 14px;margin-bottom:14px;}
+.section h2{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:0 0 10px;}
+.statrow{display:flex;gap:8px;}
+.stat{flex:1;background:var(--surface-2);border-radius:10px;padding:10px 8px;text-align:center;}
+.stat .n{font-size:20px;font-weight:800;display:block;}
+.stat .l{font-size:10.5px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.04em;}
+.stat.learned .n{color:var(--good);}
+.stat.review .n{color:var(--bad);}
+
+.chiprow{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{
+  border:1px solid var(--border);background:var(--surface-2);color:var(--text);
+  border-radius:999px;padding:7px 12px;font-size:13px;cursor:pointer;user-select:none;
+  display:inline-flex;align-items:center;gap:5px;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.chip small{opacity:.75;font-weight:400;}
+.taglabel{background:var(--chip-bg);color:var(--chip-text);border-radius:999px;padding:3px 9px;font-size:11.5px;display:inline-flex;align-items:center;gap:4px;}
+
+input[type=text], input[type=search]{
+  width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);font-size:15px;font-family:var(--sans);
+}
+.segrow{display:flex;background:var(--surface-2);border-radius:11px;padding:3px;gap:3px;}
+.segrow button{
+  flex:1;border:none;background:none;color:var(--text-dim);padding:9px 4px;border-radius:8px;
+  font-family:var(--sans);font-size:12.5px;font-weight:600;cursor:pointer;line-height:1.25;
+}
+.segrow button.on{background:var(--accent);color:#fff;}
+.segrow button.disabled{opacity:.4;}
+.modehelp{font-size:12px;color:var(--text-dim);margin-top:8px;line-height:1.4;}
+
+.cardlistrow{
+  display:flex;align-items:flex-start;gap:10px;padding:10px 2px;border-bottom:1px solid var(--border);
+}
+.cardlistrow:last-child{border-bottom:none;}
+.cardlistrow input[type=checkbox]{margin-top:3px;width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;}
+.clr-main{flex:1;min-width:0;}
+.clr-ref{font-weight:700;font-size:14.5px;}
+.clr-topic{font-size:11.5px;color:var(--text-dim);margin-top:1px;}
+.clr-tags{margin-top:5px;display:flex;flex-wrap:wrap;gap:4px;}
+.dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.dot.new{background:var(--border);}
+.dot.good{background:var(--good);}
+.dot.bad{background:var(--bad);}
+
+.bigbtn{
+  width:100%;border:none;border-radius:13px;padding:14px;font-size:16px;font-weight:700;
+  font-family:var(--sans);cursor:pointer;box-shadow:var(--shadow);
+}
+.bigbtn.primary{background:var(--accent);color:#fff;}
+.bigbtn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--border);box-shadow:none;}
+.bigbtn:disabled{opacity:.45;}
+.rowbtns{display:flex;gap:10px;}
+
+/* study screen */
+.studywrap{display:flex;flex-direction:column;min-height:calc(100vh - 60px);}
+.progresswrap{padding:2px 2px 14px;}
+.progressbar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;}
+.progressbar > div{height:100%;background:var(--accent);}
+.progresstext{font-size:12px;color:var(--text-dim);margin-top:6px;text-align:center;}
+.flashcard{
+  flex:1;background:var(--surface);border-radius:20px;box-shadow:var(--shadow);
+  padding:26px 22px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;min-height:340px;position:relative;
+}
+.fc-kicker{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);margin-bottom:14px;}
+.fc-ref{font-family:var(--serif);font-weight:700;font-size:24px;line-height:1.3;}
+.fc-text{font-family:var(--serif);font-size:19px;line-height:1.5;white-space:pre-line;}
+.fc-topic{margin-top:16px;font-size:12px;color:var(--text-dim);font-style:italic;}
+.fc-tap{margin-top:18px;font-size:12.5px;color:var(--accent-2);font-weight:700;}
+.fc-divider{width:40px;height:2px;background:var(--border);margin:16px 0;}
+.studyactions{padding-top:16px;}
+.studytags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px;}
+.linkbtn{background:none;border:none;color:var(--accent-2);font-family:var(--sans);font-size:12.5px;font-weight:700;padding:6px;cursor:pointer;}
+
+/* summary */
+.summarybig{font-size:44px;font-weight:800;text-align:center;margin:6px 0 2px;}
+.summarylabel{text-align:center;color:var(--text-dim);font-size:13px;margin-bottom:18px;}
+.missedlist{max-height:220px;overflow:auto;}
+
+/* browse detail */
+.browsedetail{padding-top:6px;}
+.tageditrow{display:flex;gap:8px;margin-top:8px;}
+.tageditrow input{flex:1;}
+.smallghost{border:1px solid var(--border);background:var(--surface-2);color:var(--text);border-radius:9px;padding:8px 10px;font-size:13px;font-family:var(--sans);cursor:pointer;}
+
+.emptystate{text-align:center;color:var(--text-dim);font-size:13.5px;padding:30px 10px;}
+.footnote{font-size:11.5px;color:var(--text-dim);line-height:1.5;margin-top:4px;}
+a.footlink, .footnote a{color:var(--accent-2);}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const CARDS_SEED = [{"id": "b4-cover", "book": 4, "order": 1, "type": "cover", "reference": null, "citation": null, "topic": null, "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "text": "This pack belongs to: _______________________\nPhone: _____________________"}, {"id": "b4-www-a-map", "book": 4, "order": 2, "type": "principle", "reference": "WWW A MAP", "citation": null, "topic": "1 Unlocking the Prison Doors", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "text": "7 Principles for Sexual Purity:\nWorship\nWarfare Praying\nWounds and Triggers\nAmputate\nMemorize Scripture\nAllies\nPreach the Gospel to Yourself Daily"}, {"id": "b4-1-corinthians-10-13", "book": 4, "order": 3, "type": "verse", "reference": "1 Corinthians 10:13", "citation": null, "topic": "1 Unlocking the Prison Doors", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "No temptation has overtaken you except what is common to mankind. And God is faithful; he will not let you be tempted beyond what you can bear. But when you are tempted, he will also provide a way out so that you can endure it."}], "defaultVersion": "NIV"}, {"id": "b4-ephesians-5-3", "book": 4, "order": 4, "type": "verse", "reference": "Ephesians 5:3", "citation": null, "topic": "2 Battle Strategy Checklist", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "But among you there must not be even a hint of sexual immorality, or of any kind of impurity, or of greed, because these are improper for God’s holy people."}], "defaultVersion": "NIV"}, {"id": "b4-ecclesiastes-4-9-10", "book": 4, "order": 5, "type": "verse", "reference": "Ecclesiastes 4:9–10", "citation": null, "topic": "3 Allies Battle Buddies", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Two are better than one, because they have a good return for their labor: If either of them falls down, one can help the other up. But pity anyone who falls and has no one to help them up."}], "defaultVersion": "NIV"}, {"id": "b4-romans-12-2", "book": 4, "order": 6, "type": "verse", "reference": "Romans 12:2", "citation": null, "topic": "4 Scripture Memory: Key to Transformation", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Do not conform to the pattern of this world, but be transformed by the renewing of your mind. Then you will be able to test and approve what God’s will is — his good, pleasing and perfect will."}], "defaultVersion": "NIV"}, {"id": "b4-psalm-119-9-11", "book": 4, "order": 7, "type": "verse", "reference": "Psalm 119:9-11", "citation": null, "topic": "4 Scripture Memory: Key to Transformation", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "How can a young person stay on the path of purity? By living according to your word. I seek you with all my heart; do not let me stray from your commands. I have hidden your word in my heart that I might not sin against you."}], "defaultVersion": "NIV"}, {"id": "b4-psalm-103-8-12", "book": 4, "order": 8, "type": "verse", "reference": "Psalm 103:8-12", "citation": null, "topic": "5 Aggressive Worship Skill 1: Memorize Psalms 103:8–12", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "The Lord is compassionate and gracious, slow to anger, abounding in love. He will not always accuse, nor will he harbor his anger forever; he does not treat us as our sins deserve or repay us according to our iniquities. For as high as the heavens are above the earth, so great is his love for those who fear him; as far as the east is from the west, so far has he removed our transgressions from us."}], "defaultVersion": "NIV"}, {"id": "b4-amazing-grace", "book": 4, "order": 9, "type": "hymn", "reference": "Amazing Grace!", "citation": null, "topic": "6 Aggressive Worship Skill 2: Singing Psalms, Hymns, and Spiritual Songs", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "text": "Amazing Grace! How sweet the sound that saved a wretch like me.\nI once was lost, but now am found, was blind, but now I see.\n‘Twas grace that taught my heart to fear, And grace my fears relieved.\nHow precious did that grace appear, the hour I first believed.\nThrough many dangers, toils and snares I have already come;\n’Tis grace has brought me safe thus far and grace will lead me home.\nWhen we’ve been there ten thousand years bright shining as the sun,\nWe’ve no less days to sing God’s praise Than when we’ve first begun."}, {"id": "b4-ephesians-6-11", "book": 4, "order": 10, "type": "verse", "reference": "Ephesians 6:11", "citation": null, "topic": "7 Worship to Warfare Skill 3: Daily Offering and Armoring Our Bodies for Warfare", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Put on the full armor of God, so that you can take your stand against the devil’s schemes."}], "defaultVersion": "NIV"}, {"id": "b4-romans-6-13", "book": 4, "order": 11, "type": "verse", "reference": "Romans 6:13", "citation": null, "topic": "7 Worship to Warfare Skill 3: Daily Offering and Armoring Our Bodies for Warfare", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Do not offer any part of yourself to sin as an instrument of wickedness, but rather offer yourselves to God as those who have been brought from death to life; and offer every part of yourself to him as an instrument of righteousness."}], "defaultVersion": "NIV"}, {"id": "b4-lords-prayer-matthew-6-9-13", "book": 4, "order": 12, "type": "prayer", "reference": "The Lord’s Prayer — Matthew 6:9-13", "citation": null, "topic": "8 Spiritual Warfare 1: Was I Under Demonic Attack?", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "text": "Our Father in heaven, hallowed be your name, your kingdom come, your will be done, on earth as it is in heaven. Give us today our daily bread. And forgive us our debts, as we also have forgiven our debtors. And lead us not into temptation, but deliver us from the evil one. For yours is the kingdom and the power and the glory forever. Amen."}, {"id": "b4-1-peter-5-8", "book": 4, "order": 13, "type": "verse", "reference": "1 Peter 5:8", "citation": null, "topic": "8 Spiritual Warfare 1: Was I Under Demonic Attack?", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Be alert and of sober mind. Your Enemy the devil prowls around like a roaring lion looking for someone to devour."}], "defaultVersion": "NIV"}, {"id": "b4-luke-4-13", "book": 4, "order": 14, "type": "verse", "reference": "Luke 4:13", "citation": null, "topic": "9 Spiritual Warfare: The Jesus Model", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "When the devil had finished all this tempting, he left him until an opportune time."}], "defaultVersion": "NIV"}, {"id": "b4-2-corinthians-10-3-5", "book": 4, "order": 15, "type": "verse", "reference": "2 Corinthians 10:3-5", "citation": null, "topic": "9 Spiritual Warfare: The Jesus Model", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "For though we live in the world, we do not wage war as the world does. The weapons we fight with are not the weapons of the world. On the contrary, they have divine power to demolish strongholds. We demolish arguments and every pretension that sets itself up against the knowledge of God, and we take captive every thought to make it obedient to Christ."}], "defaultVersion": "NIV"}, {"id": "b4-james-4-7", "book": 4, "order": 16, "type": "verse", "reference": "James 4:7", "citation": null, "topic": "10 Advanced Spiritual Warfare: Steps to Resist Demonic Oppression", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Submit yourselves, then, to God. Resist the devil, and he will flee from you."}], "defaultVersion": "NIV"}, {"id": "b4-ephesians-4-26-27", "book": 4, "order": 17, "type": "verse", "reference": "Ephesians 4:26-27", "citation": null, "topic": "10 Advanced Spiritual Warfare: Steps to Resist Demonic Oppression", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "In your anger do not sin: Do not let the sun go down while you are still angry, and do not give the devil a foothold."}], "defaultVersion": "NIV"}, {"id": "b4-2-corinthians-2-11", "book": 4, "order": 18, "type": "verse", "reference": "2 Corinthians 2:11", "citation": null, "topic": "10 Advanced Spiritual Warfare: Steps to Resist Demonic Oppression", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "… in order that Satan might not outwit us. For we are not unaware of his schemes."}], "defaultVersion": "NIV"}, {"id": "b4-psalm-62-8", "book": 4, "order": 19, "type": "verse", "reference": "Psalm 62:8", "citation": null, "topic": "11 Wounds 1: “Porn is Meeting a Need in Your Life”", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Trust in him at all times, you people; pour out your hearts to him, for God is our refuge."}], "defaultVersion": "NIV"}, {"id": "b4-psalm-86-11", "book": 4, "order": 20, "type": "verse", "reference": "Psalm 86:11", "citation": null, "topic": "12 Wounds 2: Connecting Your Heart to God", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Teach me your way, Lord, that I may rely on your faithfulness; give me an undivided heart, that I may fear your name."}], "defaultVersion": "NIV"}, {"id": "b4-isaiah-53-4-5", "book": 4, "order": 21, "type": "verse", "reference": "Isaiah 53:4-5", "citation": null, "topic": "13 Wounds 3: Forgiveness: Removing the Thorn of Woundedness", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Surely he took up our pain and bore our suffering, yet we considered him punished by God, stricken by him, and afflicted. But he was pierced for our transgressions, he was crushed for our iniquities; the punishment that brought us peace was on him, and by his wounds we are healed."}], "defaultVersion": "NIV"}, {"id": "b4-1-corinthians-6-18-20", "book": 4, "order": 22, "type": "verse", "reference": "1 Corinthians 6:18-20", "citation": null, "topic": "14 Radical Amputation", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Flee from sexual immorality. All other sins a person commits are outside the body, but whoever sins sexually, sins against their own body. Do you not know that your bodies are temples of the Holy Spirit, who is in you, whom you have received from God? You are not your own; you were bought at a price. Therefore honor God with your bodies."}], "defaultVersion": "NIV"}, {"id": "b4-2-corinthians-11-3", "book": 4, "order": 23, "type": "verse", "reference": "2 Corinthians 11:3", "citation": null, "topic": "15 Preach the Gospel to Yourself Daily", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "But I am afraid that just as Eve was deceived by the serpent’s cunning, your minds may somehow be led astray from your sincere and pure devotion to Christ."}], "defaultVersion": "NIV"}, {"id": "b4-galatians-2-20", "book": 4, "order": 24, "type": "verse", "reference": "Galatians 2:20", "citation": null, "topic": "15 Preach the Gospel to Yourself Daily", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "I have been crucified with Christ and I no longer live, but Christ lives in me. The life I now live in the body, I live by faith in the Son of God, who loved me and gave himself for me."}], "defaultVersion": "NIV"}, {"id": "b4-hebrews-13-4", "book": 4, "order": 25, "type": "verse", "reference": "Hebrews 13:4", "citation": null, "topic": "16 Radical Transformation", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "Marriage should be honored by all, and the marriage bed kept pure, for God will judge the adulterer and all the sexually immoral."}], "defaultVersion": "NIV"}, {"id": "b4-2-peter-1-3-4", "book": 4, "order": 26, "type": "verse", "reference": "2 Peter 1:3-4", "citation": null, "topic": "17 HOPE: Review and Apply", "tags": [], "source": "EVERY MAN A PURE WARRIOR VP 1.pdf", "translations": [{"version": "NIV", "text": "His divine power has given us everything we need for a godly life through our knowledge of him who called us by his own glory and goodness. Through these he has given us his very great and precious promises, so that through them you may participate in the divine nature, having escaped the corruption in the world caused by evil desires."}], "defaultVersion": "NIV"}, {"id": "b1-matthew-22-36-38", "book": 1, "order": 1, "type": "verse", "reference": "Matthew 22:36-38", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "“Teacher, which is the greatest commandment in the Law?” Jesus replied: “‘Love the Lord your God with all your heart and with all your soul and with all your mind.’ This is the first and greatest commandment.”"}], "defaultVersion": "NIV"}, {"id": "b1-2-timothy-3-16-17", "book": 1, "order": 2, "type": "verse", "reference": "2 Timothy 3:16-17", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the man of God may be thoroughly equipped for every good work."}], "defaultVersion": "NIV"}, {"id": "b1-joshua-1-8", "book": 1, "order": 3, "type": "verse", "reference": "Joshua 1:8", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Do not let this Book of the Law depart from your mouth; meditate on it day and night, so that you may be careful to do everything written in it. Then you will be prosperous and successful."}], "defaultVersion": "NIV"}, {"id": "b1-john-16-24", "book": 1, "order": 4, "type": "verse", "reference": "John 16:24", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Until now you have not asked for anything in my name. Ask and you will receive, and your joy will be complete."}], "defaultVersion": "NIV"}, {"id": "b1-philippians-4-6-7", "book": 1, "order": 5, "type": "verse", "reference": "Philippians 4:6-7", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Do not be anxious about anything, but in everything, by prayer and petition, with thanksgiving, present your requests to God.\n\nAnd the peace of God, which transcends all understanding, will guard your hearts and your minds in Christ Jesus."}], "defaultVersion": "NIV"}, {"id": "b1-james-1-22", "book": 1, "order": 6, "type": "verse", "reference": "James 1:22", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Do not merely listen to the word, and so deceive yourselves. Do what it says."}], "defaultVersion": "NIV"}, {"id": "b1-hebrews-12-11", "book": 1, "order": 7, "type": "verse", "reference": "Hebrews 12:11", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "No discipline seems pleasant at the time, but painful. Later on, however, it produces a harvest of righteousness and peace for those who have been trained by it."}], "defaultVersion": "NIV"}, {"id": "b2-genesis-2-18", "book": 2, "order": 8, "type": "verse", "reference": "Genesis 2:18", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "The LORD God said, “It is not good for the man to be alone. I will make a helper suitable for him.”"}], "defaultVersion": "NIV"}, {"id": "b2-ephesians-5-25", "book": 2, "order": 9, "type": "verse", "reference": "Ephesians 5:25", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Husbands, love your wives, just as Christ loved the church and gave himself up for her."}], "defaultVersion": "NIV"}, {"id": "b2-marriage-commitment", "book": 2, "order": 10, "type": "commitment", "reference": "My Marriage Commitment", "citation": "John 14:21, Ephesians 5:25, 1 Peter 3:7", "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "text": "It is my privilege, to show my love for Jesus by caring for my wife—to love her, show her honor, try to understand her and to give up my life and rights for her."}, {"id": "b2-1-peter-4-19", "book": 2, "order": 11, "type": "verse", "reference": "1 Peter 4:19", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "So then, those who suffer according to God’s will should commit themselves to their faithful Creator and continue to do good."}], "defaultVersion": "NIV"}, {"id": "b2-1-peter-3-7", "book": 2, "order": 12, "type": "verse", "reference": "1 Peter 3:7", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NASB", "text": "You husbands in the same way, live with your wives in an understanding way, as with someone weaker, since she is a woman; and show her honor as a fellow heir of the grace of life, so that your prayers will not be hindered."}], "defaultVersion": "NASB"}, {"id": "b2-raising-children", "book": 2, "order": 13, "type": "principle", "reference": "Three Biblical Principles for Raising Children", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "text": "• It is the father’s God-given responsibility to train his children. Ephesians 6:4\n• Children get their self-image from what they believe Dad thinks about them. Proverbs 17:6\n• The words spoken to a child will determine his destiny. Proverbs 18:21"}, {"id": "b2-ephesians-6-4", "book": 2, "order": 14, "type": "verse", "reference": "Ephesians 6:4", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Fathers, do not exasperate your children; instead, bring them up in the training and instruction of the Lord."}], "defaultVersion": "NIV"}, {"id": "b2-proverbs-18-21", "book": 2, "order": 15, "type": "verse", "reference": "Proverbs 18:21", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "The tongue has the power of life and death….."}], "defaultVersion": "NIV"}, {"id": "b2-proverbs-18-13", "book": 2, "order": 16, "type": "verse", "reference": "Proverbs 18:13", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "He who answers before listening—that is his folly and his shame."}], "defaultVersion": "NIV"}, {"id": "b2-1-peter-3-8-9", "book": 2, "order": 17, "type": "verse", "reference": "1 Peter 3:8-9", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Finally, all of you, live in harmony with one another; be sympathetic, love as brothers, be compassionate and humble. Do not repay evil with evil or insult with insult, but with blessing, because to this you were called so that you may inherit a blessing."}], "defaultVersion": "NIV"}, {"id": "b3-mark-4-19", "book": 3, "order": 18, "type": "verse", "reference": "Mark 4:19", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "…but the worries of this life, the deceitfulness of wealth and the desires for other things come in and choke the word, making it unfruitful."}], "defaultVersion": "NIV"}, {"id": "b3-proverbs-22-7", "book": 3, "order": 19, "type": "verse", "reference": "Proverbs 22:7", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "RSV", "text": "The rich rule over the poor, and the borrower is the slave of the lender."}], "defaultVersion": "RSV"}, {"id": "b3-ecclesiastes-11-2", "book": 3, "order": 20, "type": "verse", "reference": "Ecclesiastes 11:2", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Give portions to seven, yes to eight, for you do not know what disaster may come upon the land."}], "defaultVersion": "NIV"}, {"id": "b3-1-timothy-6-18-19", "book": 3, "order": 21, "type": "verse", "reference": "1 Timothy 6:18-19", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Command them to do good, to be rich in good deeds, and to be generous and willing to share. In this way they will lay up treasure for themselves as a firm foundation for the coming age, so that they may take hold of the life that is truly life."}], "defaultVersion": "NIV"}, {"id": "b3-james-1-2-4", "book": 3, "order": 22, "type": "verse", "reference": "James 1:2-4", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Consider it pure joy, my brothers, whenever you face trials of many kinds, because you know that the testing of your faith develops perseverance.\n\nPerseverance must finish its work so that you may be mature and complete, not lacking anything."}], "defaultVersion": "NIV"}, {"id": "b3-matthew-11-28-30", "book": 3, "order": 23, "type": "verse", "reference": "Matthew 11:28-30", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Come to me, all you who are weary and burdened, and I will give you rest. Take my yoke upon you and learn from me, for I am gentle and humble in heart, and you will find rest for your souls. For my yoke is easy and my burden is light."}], "defaultVersion": "NIV"}, {"id": "b3-matthew-28-18-20", "book": 3, "order": 24, "type": "verse", "reference": "Matthew 28:18-20", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Then Jesus came to them and said, “All authority in heaven and on earth has been given to me. Therefore go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit, and teaching them to obey everything I have commanded you. And surely I am with you always, to the very end of the age.”"}], "defaultVersion": "NIV"}, {"id": "b3-1-corinthians-6-20", "book": 3, "order": 25, "type": "verse", "reference": "1 Corinthians 6:20", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "You are not your own; you were bought at a price. Therefore honor God with your body."}], "defaultVersion": "NIV"}, {"id": "b3-colossians-3-23-24", "book": 3, "order": 26, "type": "verse", "reference": "Colossians 3:23-24", "citation": null, "topic": null, "tags": [], "source": "2020 EMAW Verse Pack.pdf", "translations": [{"version": "NIV", "text": "Whatever you do, work at it with all your heart, as working for the Lord, not for men, since you know that you will receive an inheritance from the Lord as a reward. It is the Lord Christ you are serving."}], "defaultVersion": "NIV"}];
+const APP_VERSION = "1.4";
+const BUILT_DATE = "2026-08-27";
+</script>
+<script>
+/* ============================================================
+   Verse Pack Flashcards — standalone offline study app
+   All data lives in localStorage on this device/browser only.
+   ============================================================ */
+
+const LS_PROGRESS = "emaw_progress_v1";
+const LS_TAGS = "emaw_usertags_v1";
+const LS_PREFS = "emaw_prefs_v1";
+const LS_OVERRIDES = "emaw_overrides_v1";
+const LS_COLLECTIONS = "emaw_collections_v1";
+const LS_CARD_COLLECTIONS = "emaw_cardcollections_v1";
+const LS_USER_CARDS = "emaw_usercards_v1";
+const LS_ONBOARDED = "emaw_onboarded_v1";
+const UNCATEGORIZED_ID = "uncategorized";
+
+const KNOWN_VERSIONS = ["NIV","ESV","KJV","NKJV","NASB","NLT","RSV","CSB","AMP"];
+
+// Voice recitation feature support — Chrome (desktop & Android) has the most
+// reliable implementation; Safari/iOS and Firefox generally don't support
+// SpeechRecognition, so this mode is hidden/disabled gracefully when absent.
+const SPEECH_RECOGNITION_SUPPORTED = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+const SPEECH_SYNTHESIS_SUPPORTED = ("speechSynthesis" in window);
+
+const TYPE_LABELS = {
+  verse: "Verse",
+  hymn: "Hymn",
+  prayer: "Prayer",
+  principle: "Principles",
+  commitment: "Commitment",
+  cover: "Cover"
+};
+
+/* ---------------- storage helpers ---------------- */
+function safeParse(str, fallback){
+  try{ const v = JSON.parse(str); return v == null ? fallback : v; }
+  catch(e){ return fallback; }
+}
+function lsGet(key, fallback){
+  try{ return safeParse(localStorage.getItem(key), fallback); }
+  catch(e){ return fallback; }
+}
+function lsSet(key, val){
+  try{ localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch(e){ console.warn("Storage write failed", e); return false; }
+}
+
+let progress = lsGet(LS_PROGRESS, {});   // { [id]: {seen,correct,wrong,lastResult,lastSeenAt} }
+let userTags = lsGet(LS_TAGS, {});       // { [id]: [tags] }
+let prefs = lsGet(LS_PREFS, {});
+let overrides = lsGet(LS_OVERRIDES, {}); // { [id]: {reference,topic,citation,text,translations,defaultVersion} }
+
+// Ephemeral "peek at a different translation" choice — NOT persisted, resets on reload.
+// Keeps the permanent default (used for quizzing) separate from a one-off look at another version.
+let tempVersion = {}; // { [id]: version }
+
+function saveProgress(){ lsSet(LS_PROGRESS, progress); }
+function saveTags(){ lsSet(LS_TAGS, userTags); }
+function savePrefs(){ lsSet(LS_PREFS, prefs); }
+function saveOverrides(){ lsSet(LS_OVERRIDES, overrides); }
+
+function getProg(id){
+  return progress[id] || {seen:0, correct:0, wrong:0, lastResult:null, lastSeenAt:null};
+}
+function getTags(card){
+  if (userTags[card.id]) return userTags[card.id];
+  return card.tags || [];
+}
+function setTags(cardId, tags){
+  userTags[cardId] = tags;
+  saveTags();
+}
+function allTagsInUse(){
+  const s = new Set();
+  CARDS.forEach(c => getTags(c).forEach(t => s.add(t)));
+  return Array.from(s).sort((a,b)=>a.localeCompare(b));
+}
+
+/* ---------------- card overrides (user edits) ---------------- */
+function getEffectiveCard(card){
+  const o = overrides[card.id];
+  return o ? Object.assign({}, card, o) : card;
+}
+function isEdited(cardId){ return !!overrides[cardId]; }
+function saveCardEdit(cardId, patch){
+  overrides[cardId] = Object.assign({}, overrides[cardId] || {}, patch);
+  saveOverrides();
+}
+function resetCardEdit(cardId){
+  delete overrides[cardId];
+  saveOverrides();
+}
+
+/* ---------------- translations ---------------- */
+function cardVersions(card){
+  const eff = getEffectiveCard(card);
+  return (eff.translations || []).map(t=>t.version);
+}
+function currentVersion(card){
+  const eff = getEffectiveCard(card);
+  if (eff.type !== "verse" || !eff.translations || !eff.translations.length) return null;
+  const want = tempVersion[card.id] || eff.defaultVersion || eff.translations[0].version;
+  return eff.translations.some(t=>t.version===want) ? want : eff.translations[0].version;
+}
+function displayText(card){
+  const eff = getEffectiveCard(card);
+  if (eff.type !== "verse" || !eff.translations || !eff.translations.length) return eff.text || "";
+  const ver = currentVersion(card);
+  const found = eff.translations.find(t=>t.version===ver) || eff.translations[0];
+  return found.text;
+}
+function allTextForSearch(card){
+  const eff = getEffectiveCard(card);
+  if (eff.type === "verse" && eff.translations){
+    return eff.translations.map(t=>t.text).join(" ");
+  }
+  return eff.text || "";
+}
+
+/* ---------------- data ---------------- */
+const CARDS = CARDS_SEED.slice().sort((a,b)=> a.book - b.book || a.order - b.order);
+const BOOKS = Array.from(new Set(CARDS.map(c=>c.book))).sort((a,b)=>a-b);
+
+function bookLabel(n){
+  return "Book " + n;
+}
+
+/* ---------------- collections ---------------- */
+function newCollectionId(){
+  return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+
+let collections = lsGet(LS_COLLECTIONS, null);
+let cardCollections = lsGet(LS_CARD_COLLECTIONS, null);
+
+if (!collections){
+  // First run (or upgrading from the old Book 1-4 layout): seed a Collection
+  // per legacy book number so nothing you've already studied disappears.
+  const DEFAULT_NAMES = {1:"EMAW Book 1", 2:"EMAW Book 2", 3:"EMAW Book 3", 4:"Pure Warrior VP 1"};
+  collections = BOOKS.map(n => ({ id: "book"+n, name: DEFAULT_NAMES[n] || bookLabel(n) }));
+}
+if (!cardCollections){
+  cardCollections = {};
+  CARDS.forEach(c => { cardCollections[c.id] = ["book"+c.book]; });
+}
+function saveCollections(){ lsSet(LS_COLLECTIONS, collections); }
+function saveCardCollections(){ lsSet(LS_CARD_COLLECTIONS, cardCollections); }
+saveCollections();
+saveCardCollections();
+
+function getCollections(){ return collections; }
+function collectionById(id){ return collections.find(c=>c.id===id); }
+function collectionLabel(id){
+  if (id === UNCATEGORIZED_ID) return "Uncategorized";
+  const c = collectionById(id);
+  return c ? c.name : "Unknown collection";
+}
+// Real collection ids a card is tagged to (not including the virtual Uncategorized bucket).
+function rawCardCollectionIds(card){
+  return cardCollections[card.id] || [];
+}
+// Collection ids to use for filtering/display: falls back to Uncategorized
+// so a card never becomes permanently invisible if its collection was deleted.
+function effectiveCardCollectionIds(card){
+  const ids = rawCardCollectionIds(card).filter(id => collectionById(id));
+  return ids.length ? ids : [UNCATEGORIZED_ID];
+}
+function setCardCollections(cardId, ids){
+  cardCollections[cardId] = ids;
+  saveCardCollections();
+}
+function anyCardUncategorized(){
+  return CARDS.some(c => effectiveCardCollectionIds(c)[0] === UNCATEGORIZED_ID && !rawCardCollectionIds(c).filter(id=>collectionById(id)).length);
+}
+// Collections to show in pickers/filters, including the virtual Uncategorized
+// bucket only when at least one card actually needs it.
+function displayCollections(){
+  const list = collections.slice();
+  if (anyCardUncategorized()) list.push({id: UNCATEGORIZED_ID, name: "Uncategorized"});
+  return list;
+}
+function addCollection(name){
+  const trimmed = name.trim();
+  if (!trimmed) return null;
+  const c = { id: newCollectionId(), name: trimmed };
+  collections.push(c);
+  saveCollections();
+  return c;
+}
+function renameCollection(id, name){
+  const c = collectionById(id);
+  if (!c) return;
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  c.name = trimmed;
+  saveCollections();
+}
+function deleteCollection(id){
+  collections = collections.filter(c=>c.id!==id);
+  saveCollections();
+  Object.keys(cardCollections).forEach(cid=>{
+    cardCollections[cid] = (cardCollections[cid]||[]).filter(x=>x!==id);
+  });
+  saveCardCollections();
+  state.filters.collectionsOff.delete(id);
+}
+
+/* ---------------- user-added cards ---------------- */
+// New verses you add yourself, kept separate from the built-in seed so we
+// never have to touch CARDS_SEED. Hydrated into CARDS below at load time.
+let userCards = lsGet(LS_USER_CARDS, []);
+function saveUserCards(){ lsSet(LS_USER_CARDS, userCards); }
+function isUserAdded(cardId){ return userCards.some(c=>c.id===cardId); }
+function newCardId(){
+  return "user-" + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+}
+function addUserCard({reference, text, version, topic, citation, collectionIds, tags}){
+  const id = newCardId();
+  const ver = (version || "NIV").trim() || "NIV";
+  const card = {
+    id, book: 99, order: 1000 + userCards.length,
+    type: "verse",
+    reference: (reference || "").trim() || null,
+    citation: (citation || "").trim() || null,
+    topic: (topic || "").trim() || null,
+    tags: [],
+    source: "Added by you",
+    translations: [{ version: ver, text: (text || "").trim() }],
+    defaultVersion: ver,
+    createdAt: new Date().toISOString()
+  };
+  userCards.push(card);
+  saveUserCards();
+  CARDS.push(card);
+  if (collectionIds && collectionIds.length) setCardCollections(id, collectionIds.slice());
+  if (tags && tags.length) setTags(id, tags.slice());
+  return card;
+}
+function deleteUserCard(cardId){
+  userCards = userCards.filter(c=>c.id!==cardId);
+  saveUserCards();
+  const idx = CARDS.findIndex(c=>c.id===cardId);
+  if (idx >= 0) CARDS.splice(idx, 1);
+  delete cardCollections[cardId]; saveCardCollections();
+  delete userTags[cardId]; saveTags();
+  delete progress[cardId]; saveProgress();
+  delete overrides[cardId]; saveOverrides();
+}
+function cardCreatedAt(card){
+  return card.createdAt ? new Date(card.createdAt).getTime() : 0;
+}
+function relativeDateLabel(iso){
+  if (!iso) return "";
+  const then = new Date(iso);
+  const days = Math.floor((Date.now() - then.getTime()) / 86400000);
+  if (days <= 0) return "added today";
+  if (days === 1) return "added yesterday";
+  if (days < 7) return `added ${days} days ago`;
+  if (days < 31) return `added ${Math.floor(days/7)}w ago`;
+  return "added " + then.toLocaleDateString();
+}
+// Rehydrate any previously-added user cards into CARDS at load time.
+userCards.forEach(c => { if (!CARDS.some(x=>x.id===c.id)) CARDS.push(c); });
+
+/* ---------------- app state ---------------- */
+const state = {
+  screen: "home",
+  filters: {
+    collectionsOff: new Set(), // collection ids toggled OFF (default: everything on)
+    types: new Set(Object.keys(TYPE_LABELS).filter(t=>t!=="cover")),
+    tags: new Set(),
+    search: "",
+    onlyMissed: false
+  },
+  deselected: new Set(), // ids manually unchecked from current filtered set
+  mode: prefs.mode || "ref2verse",   // ref2verse | verse2ref | quiz
+  order: prefs.order || "book",      // book | random
+  session: null,
+  browseOpenId: null,
+  // Independent filter state for the read-only Browse tab, kept separate from
+  // the Study "Choose cards" filters above so looking things up never changes
+  // what's in your memorization deck.
+  browse: {
+    collectionsOff: new Set(),
+    tags: new Set(), // selected topic/tag filters (OR match)
+    search: ""
+  }
+};
+
+/* ---------------- filtering / selection ---------------- */
+function isCollectionOn(id){ return !state.filters.collectionsOff.has(id); }
+function toggleCollectionFilter(id){
+  if (state.filters.collectionsOff.has(id)) state.filters.collectionsOff.delete(id);
+  else state.filters.collectionsOff.add(id);
+}
+function isBrowseCollectionOn(id){ return !state.browse.collectionsOff.has(id); }
+function toggleBrowseCollectionFilter(id){
+  if (state.browse.collectionsOff.has(id)) state.browse.collectionsOff.delete(id);
+  else state.browse.collectionsOff.add(id);
+}
+function browseFilteredCards(){
+  const q = state.browse.search.trim().toLowerCase();
+  return CARDS.filter(c=>{
+    if (!effectiveCardCollectionIds(c).some(id => isBrowseCollectionOn(id))) return false;
+    if (state.browse.tags.size){
+      const ct = getTags(c);
+      let hit = false;
+      for (const t of state.browse.tags){ if (ct.includes(t)) { hit = true; break; } }
+      if (!hit) return false;
+    }
+    if (q){
+      const eff = getEffectiveCard(c);
+      const collNames = effectiveCardCollectionIds(c).map(collectionLabel).join(" ");
+      const hay = [eff.reference, allTextForSearch(c), eff.topic, eff.citation, getTags(c).join(" "), collNames]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function filteredCards(){
+  const f = state.filters;
+  const q = f.search.trim().toLowerCase();
+  return CARDS.filter(c=>{
+    if (!effectiveCardCollectionIds(c).some(id => isCollectionOn(id))) return false;
+    if (!f.types.has(c.type)) return false;
+    if (f.onlyMissed && getProg(c.id).lastResult !== "wrong") return false;
+    if (f.tags.size){
+      const ct = getTags(c);
+      let hit = false;
+      for (const t of f.tags){ if (ct.includes(t)) { hit = true; break; } }
+      if (!hit) return false;
+    }
+    if (q){
+      const eff = getEffectiveCard(c);
+      const hay = [eff.reference, allTextForSearch(c), eff.topic, eff.citation, (getTags(c)||[]).join(" ")]
+        .filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+}
+function selectedCards(){
+  return filteredCards().filter(c => !state.deselected.has(c.id));
+}
+function shuffle(arr){
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ---------------- render helpers ---------------- */
+const app = document.getElementById("app");
+function el(html){ const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstElementChild; }
+function esc(s){ return (s==null?"":String(s)).replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m])); }
+
+function deckStats(){
+  let learned=0, review=0, fresh=0;
+  CARDS.forEach(c=>{
+    const p = getProg(c.id);
+    if (p.seen === 0) fresh++;
+    else if (p.lastResult === "wrong") review++;
+    else learned++;
+  });
+  return {total: CARDS.length, learned, review, fresh};
+}
+
+function render(){
+  app.innerHTML = "";
+  if (state.screen === "study" && state.session){
+    app.appendChild(renderStudy());
+    return;
+  }
+  const wrap = el(`<div></div>`);
+  wrap.appendChild(renderTopbar());
+  const main = el(`<main></main>`);
+  if (state.screen === "home") main.appendChild(renderHome());
+  else if (state.screen === "summary") main.appendChild(renderSummary());
+  else if (state.screen === "browse") main.appendChild(renderBrowseTab());
+  else if (state.screen === "edittag") main.appendChild(renderEditTag());
+  else if (state.screen === "settings") main.appendChild(renderSettings());
+  wrap.appendChild(main);
+  wrap.appendChild(renderBottomNav());
+  app.appendChild(wrap);
+}
+
+function renderTopbar(){
+  const titles = {
+    home:["Verse Pack Flashcards","Every Man A Warrior / Pure Warrior"],
+    browse:["Browse","Look up a verse — nothing to edit here"],
+    edittag:["Edit & Tag","All "+CARDS.length+" cards"],
+    settings:["Settings","Backup & data"],
+    summary:["Session Summary",""]
+  };
+  const [title, sub] = titles[state.screen] || ["",""];
+  const bar = el(`<div class="topbar">
+      <div><h1>${esc(title)}</h1>${sub?`<div class="sub">${esc(sub)}</div>`:""}</div>
+    </div>`);
+  return bar;
+}
+
+function renderBottomNav(){
+  const nav = el(`<div class="bottomnav">
+    <button data-nav="home"><span class="ic">🏠</span>Study</button>
+    <button data-nav="browse"><span class="ic">📖</span>Browse</button>
+    <button data-nav="edittag"><span class="ic">🏷️</span>Edit &amp; Tag</button>
+    <button data-nav="settings"><span class="ic">⚙️</span>Settings</button>
+  </div>`);
+  nav.querySelectorAll("button").forEach(b=>{
+    if (b.dataset.nav === state.screen) b.classList.add("active");
+    b.addEventListener("click", ()=>{ state.screen = b.dataset.nav; render(); window.scrollTo(0,0); });
+  });
+  return nav;
+}
+
+/* ---------------- HOME ---------------- */
+function renderHome(){
+  const frag = document.createDocumentFragment();
+  const stats = deckStats();
+
+  frag.appendChild(el(`<div class="section">
+    <h2>Your progress</h2>
+    <div class="statrow">
+      <div class="stat"><span class="n">${stats.total}</span><span class="l">Total</span></div>
+      <div class="stat learned"><span class="n">${stats.learned}</span><span class="l">Learned</span></div>
+      <div class="stat review"><span class="n">${stats.review}</span><span class="l">Review</span></div>
+      <div class="stat"><span class="n">${stats.fresh}</span><span class="l">New</span></div>
+    </div>
+  </div>`));
+
+  // Filters section
+  const filtSec = el(`<div class="section"></div>`);
+  filtSec.appendChild(el(`<div style="display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="margin:0;">Choose cards</h2>
+    </div>`));
+
+  const collHeader = el(`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <div class="footnote" style="margin:0;">Collections</div>
+      <button class="linkbtn" id="manageCollectionsBtn" style="padding:2px 6px;">Manage</button>
+    </div>`);
+  collHeader.querySelector("#manageCollectionsBtn").addEventListener("click", openManageCollections);
+  filtSec.appendChild(collHeader);
+
+  const collRow = el(`<div class="chiprow" style="margin-bottom:10px;"></div>`);
+  displayCollections().forEach(coll=>{
+    const chip = el(`<div class="chip ${isCollectionOn(coll.id)?"on":""}">${esc(coll.name)}</div>`);
+    chip.addEventListener("click", ()=>{
+      toggleCollectionFilter(coll.id);
+      render();
+    });
+    collRow.appendChild(chip);
+  });
+  if (!displayCollections().length){
+    collRow.appendChild(el(`<div class="footnote">No collections yet — tap Manage to add one.</div>`));
+  }
+  filtSec.appendChild(collRow);
+
+  const search = el(`<input type="search" placeholder="Search reference, text, or topic…">`);
+  search.value = state.filters.search;
+  search.addEventListener("input", (e)=>{ state.filters.search = e.target.value; renderSelectionList(); refreshSelectionCount(); });
+  filtSec.appendChild(search);
+
+  const tags = allTagsInUse();
+  if (tags.length){
+    const tagWrap = el(`<div style="margin-top:10px;"><div class="footnote" style="margin-bottom:6px;">Tags</div><div class="chiprow"></div></div>`);
+    const tagRow = tagWrap.querySelector(".chiprow");
+    tags.forEach(t=>{
+      const chip = el(`<div class="chip ${state.filters.tags.has(t)?"on":""}">${esc(t)}</div>`);
+      chip.addEventListener("click", ()=>{
+        if (state.filters.tags.has(t)) state.filters.tags.delete(t); else state.filters.tags.add(t);
+        render();
+      });
+      tagRow.appendChild(chip);
+    });
+    filtSec.appendChild(tagWrap);
+  }
+
+  const missedChip = el(`<div class="chiprow" style="margin-top:10px;">
+      <div class="chip ${state.filters.onlyMissed?"on":""}" id="chipMissed">⟲ Only cards I've missed</div>
+      <div class="chip" id="chipTypes">Card types…</div>
+    </div>`);
+  missedChip.querySelector("#chipMissed").addEventListener("click", ()=>{
+    state.filters.onlyMissed = !state.filters.onlyMissed;
+    render();
+  });
+  missedChip.querySelector("#chipTypes").addEventListener("click", ()=>{
+    state.showTypePicker = !state.showTypePicker;
+    render();
+  });
+  filtSec.appendChild(missedChip);
+
+  if (state.showTypePicker){
+    const typeWrap = el(`<div class="chiprow" style="margin-top:10px;"></div>`);
+    Object.keys(TYPE_LABELS).forEach(t=>{
+      const chip = el(`<div class="chip ${state.filters.types.has(t)?"on":""}">${TYPE_LABELS[t]}</div>`);
+      chip.addEventListener("click", ()=>{
+        if (state.filters.types.has(t)) state.filters.types.delete(t); else state.filters.types.add(t);
+        render();
+      });
+      typeWrap.appendChild(chip);
+    });
+    filtSec.appendChild(typeWrap);
+  }
+
+  // manual list
+  const listWrap = el(`<div style="margin-top:12px;"></div>`);
+  const listHeader = el(`<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="footnote" id="selCountLabel"></div>
+      <div style="display:flex;gap:14px;">
+        <button class="linkbtn" id="selAllBtn">Select all</button>
+        <button class="linkbtn" id="selNoneBtn">Select none</button>
+      </div>
+    </div>`);
+  listWrap.appendChild(listHeader);
+  const listBody = el(`<div id="cardListBody"></div>`);
+  listWrap.appendChild(listBody);
+  filtSec.appendChild(listWrap);
+  frag.appendChild(filtSec);
+
+  // mode section
+  const modeSec = el(`<div class="section"><h2>Study mode</h2>
+    <div class="segrow" id="modeSeg">
+      <button data-mode="ref2verse">Reference<br>→ Verse</button>
+      <button data-mode="verse2ref">Verse<br>→ Reference</button>
+      <button data-mode="quiz">Quiz Me<br>(2nd person)</button>
+      <button data-mode="recite">🎙️ Recite<br>from Memory</button>
+    </div>
+    <div class="modehelp" id="modeHelp"></div>
+  </div>`);
+  const helps = {
+    ref2verse: "You'll see the reference first, try to recall the verse, then tap to reveal and check yourself.",
+    verse2ref: "You'll see the verse text first, try to recall the reference, then tap to reveal and check yourself.",
+    quiz: "Hand your phone to someone else. They'll see the reference and the verse together right away, so they can follow along as you recite it from memory and mark whether you got it right.",
+    recite: SPEECH_RECOGNITION_SUPPORTED
+      ? "Solo practice: your phone reads the reference aloud, you recite the verse from memory, and it listens and grades how close you were — no second person needed."
+      : "Solo voice practice needs a browser with speech recognition support, like Chrome on Android or desktop. This browser doesn't support it, so this mode is unavailable here."
+  };
+  modeSec.querySelector("#modeHelp").textContent = helps[state.mode];
+  modeSec.querySelectorAll("#modeSeg button").forEach(b=>{
+    if (b.dataset.mode === "recite" && !SPEECH_RECOGNITION_SUPPORTED) b.classList.add("disabled");
+    if (b.dataset.mode === state.mode) b.classList.add("on");
+    b.addEventListener("click", ()=>{
+      if (b.dataset.mode === "recite" && !SPEECH_RECOGNITION_SUPPORTED){
+        alert("Voice recitation needs a browser with speech recognition support, like Chrome on Android or desktop. This browser doesn't support it.");
+        return;
+      }
+      state.mode = b.dataset.mode; prefs.mode = state.mode; savePrefs(); render();
+    });
+  });
+  frag.appendChild(modeSec);
+
+  // order section
+  const orderSec = el(`<div class="section"><h2>Order</h2>
+    <div class="segrow" id="orderSeg">
+      <button data-order="book">Original Order</button>
+      <button data-order="random">Shuffle</button>
+    </div>
+  </div>`);
+  orderSec.querySelectorAll("#orderSeg button").forEach(b=>{
+    if (b.dataset.order === state.order) b.classList.add("on");
+    b.addEventListener("click", ()=>{ state.order = b.dataset.order; prefs.order = state.order; savePrefs(); render(); });
+  });
+  frag.appendChild(orderSec);
+
+  const startWrap = el(`<div style="margin-top:4px;">
+      <button class="bigbtn primary" id="startBtn">Start Studying</button>
+    </div>`);
+  startWrap.querySelector("#startBtn").addEventListener("click", startSession);
+  frag.appendChild(startWrap);
+
+  // defer list render (needs DOM in place)
+  setTimeout(()=>{ renderSelectionList(); refreshSelectionCount();
+    const sa = document.getElementById("selAllBtn"); if (sa) sa.addEventListener("click", ()=>{ state.deselected.clear(); renderSelectionList(); refreshSelectionCount(); });
+    const sn = document.getElementById("selNoneBtn"); if (sn) sn.addEventListener("click", ()=>{ filteredCards().forEach(c=>state.deselected.add(c.id)); renderSelectionList(); refreshSelectionCount(); });
+  }, 0);
+
+  return frag;
+}
+
+function refreshSelectionCount(){
+  const lbl = document.getElementById("selCountLabel");
+  if (!lbl) return;
+  const n = selectedCards().length;
+  const total = filteredCards().length;
+  lbl.textContent = n + " of " + total + " cards selected";
+  const startBtn = document.getElementById("startBtn");
+  if (startBtn) startBtn.disabled = n === 0;
+}
+
+function renderSelectionList(){
+  const body = document.getElementById("cardListBody");
+  if (!body) return;
+  body.innerHTML = "";
+  const cards = filteredCards();
+  if (!cards.length){
+    body.appendChild(el(`<div class="emptystate">No cards match these filters.</div>`));
+    return;
+  }
+  cards.forEach(c=>{
+    const eff = getEffectiveCard(c);
+    const p = getProg(c.id);
+    const dotClass = p.seen===0 ? "new" : (p.lastResult==="wrong" ? "bad" : "good");
+    const row = el(`<label class="cardlistrow">
+      <input type="checkbox" ${state.deselected.has(c.id)?"":"checked"}>
+      <span class="dot ${dotClass}"></span>
+      <div class="clr-main">
+        <div class="clr-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}${isEdited(c.id)?' <span class="footnote">(edited)</span>':''}</div>
+        <div class="clr-topic">${esc(effectiveCardCollectionIds(c).map(collectionLabel).join(", "))}${eff.topic? " · "+esc(eff.topic): ""}</div>
+      </div>
+    </label>`);
+    row.querySelector("input").addEventListener("change", (e)=>{
+      if (e.target.checked) state.deselected.delete(c.id); else state.deselected.add(c.id);
+      refreshSelectionCount();
+    });
+    body.appendChild(row);
+  });
+}
+
+/* ---------------- MANAGE COLLECTIONS ---------------- */
+function openManageCollections(){
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Collections</div>`));
+  sheet.appendChild(el(`<div class="footnote" style="margin-bottom:12px;">Rename, delete, or add the verse-pack collections you can toggle on the Study tab and tag verses to in Browse.</div>`));
+
+  const listWrap = el(`<div id="collectionsListWrap"></div>`);
+  sheet.appendChild(listWrap);
+
+  function drawList(){
+    listWrap.innerHTML = "";
+    if (!collections.length){
+      listWrap.appendChild(el(`<div class="emptystate" style="padding:14px 0;">No collections yet.</div>`));
+    }
+    collections.forEach(coll=>{
+      const row = el(`<div class="tageditrow" style="align-items:center;">
+          <input type="text" value="${esc(coll.name)}">
+          <button class="smallghost" title="Delete" style="color:var(--bad);">Delete</button>
+        </div>`);
+      const input = row.querySelector("input");
+      input.addEventListener("change", ()=>{ renameCollection(coll.id, input.value); });
+      input.addEventListener("blur", ()=>{ renameCollection(coll.id, input.value); drawList(); });
+      row.querySelector("button").addEventListener("click", ()=>{
+        const count = CARDS.filter(c => rawCardCollectionIds(c).includes(coll.id)).length;
+        const msg = count
+          ? `Delete "${coll.name}"? ${count} verse${count===1?"":"s"} tagged to it will move to Uncategorized.`
+          : `Delete "${coll.name}"?`;
+        if (confirm(msg)){
+          deleteCollection(coll.id);
+          drawList();
+        }
+      });
+      listWrap.appendChild(row);
+    });
+  }
+  drawList();
+
+  const addRow = el(`<div class="tageditrow">
+      <input type="text" placeholder="New collection name" id="newCollectionInput">
+      <button class="smallghost" id="addCollectionBtn">Add</button>
+    </div>`);
+  function doAdd(){
+    const inp = addRow.querySelector("#newCollectionInput");
+    const val = inp.value.trim();
+    if (!val) return;
+    addCollection(val);
+    inp.value = "";
+    drawList();
+  }
+  addRow.querySelector("#addCollectionBtn").addEventListener("click", doAdd);
+  addRow.querySelector("#newCollectionInput").addEventListener("keydown", (e)=>{ if (e.key==="Enter") doAdd(); });
+  sheet.appendChild(addRow);
+
+  const closeBtn = el(`<button class="bigbtn ghost" style="margin-top:16px;">Done</button>`);
+  function closeAndRefresh(){ overlay.remove(); render(); }
+  closeBtn.addEventListener("click", closeAndRefresh);
+  sheet.appendChild(closeBtn);
+
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) closeAndRefresh(); });
+  document.body.appendChild(overlay);
+}
+
+/* ---------------- voice recitation ---------------- */
+function speak(text){
+  if (!SPEECH_SYNTHESIS_SUPPORTED || !text) return;
+  try {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  } catch(e){ /* not fatal — recitation still works without spoken prompt */ }
+}
+
+function tokenizeForDisplay(text){
+  return (text || "").split(/\s+/).filter(Boolean).map(tok => ({
+    display: tok,
+    norm: tok.toLowerCase().replace(/[\u2018\u2019\u201c\u201d]/g, "'").replace(/[^a-z0-9']/g, "")
+  }));
+}
+function normalizeWords(text){
+  return (text || "").toLowerCase().replace(/[\u2018\u2019\u201c\u201d]/g, "'")
+    .split(/\s+/).map(w => w.replace(/[^a-z0-9']/g, "")).filter(Boolean);
+}
+// Word-level LCS: rewards correct words AND correct relative order, without
+// requiring an exact match — a skipped or substituted word only costs that
+// one word rather than breaking the whole comparison.
+function lcsHits(refWords, saidWords){
+  const n = refWords.length, m = saidWords.length;
+  const dp = Array.from({length:n+1}, ()=> new Array(m+1).fill(0));
+  for (let i=1;i<=n;i++){
+    for (let j=1;j<=m;j++){
+      dp[i][j] = refWords[i-1]===saidWords[j-1] ? dp[i-1][j-1]+1 : Math.max(dp[i-1][j], dp[i][j-1]);
+    }
+  }
+  const hits = new Array(n).fill(false);
+  let i=n, j=m;
+  while (i>0 && j>0){
+    if (refWords[i-1]===saidWords[j-1]){ hits[i-1]=true; i--; j--; }
+    else if (dp[i-1][j] >= dp[i][j-1]) i--; else j--;
+  }
+  return { hits, matched: dp[n][m] };
+}
+function gradeRecitation(referenceText, spokenText){
+  const tokens = tokenizeForDisplay(referenceText);
+  const idxMap = [];
+  const refWords = [];
+  tokens.forEach((t, idx)=>{ if (t.norm){ refWords.push(t.norm); idxMap.push(idx); } });
+  const saidWords = normalizeWords(spokenText);
+  const { hits, matched } = refWords.length ? lcsHits(refWords, saidWords) : { hits: [], matched: 0 };
+  const hitSet = new Set();
+  hits.forEach((h, k)=>{ if (h) hitSet.add(idxMap[k]); });
+  const annotated = tokens.map((t, idx)=> ({ display: t.display, skip: !t.norm, hit: hitSet.has(idx) }));
+  const total = refWords.length || 1;
+  const score = Math.round((matched/total)*100);
+  return { score, annotated };
+}
+function scoreLabel(score){
+  if (score >= 95) return "Nailed it! 🎉";
+  if (score >= 80) return "So close!";
+  if (score >= 60) return "Getting there";
+  return "Needs more practice";
+}
+
+let activeRecognition = null;
+function stopRecitationListening(){
+  if (activeRecognition){
+    try {
+      activeRecognition.onresult = null;
+      activeRecognition.onerror = null;
+      activeRecognition.onend = null;
+      activeRecognition.stop();
+    } catch(e){ /* already stopped */ }
+    activeRecognition = null;
+  }
+}
+function startRecitationListening(onUpdate){
+  const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Ctor){ onUpdate({ error: "unsupported", final: true }); return; }
+  stopRecitationListening();
+  const rec = new Ctor();
+  rec.lang = "en-US";
+  rec.interimResults = true;
+  rec.continuous = false;
+  rec.maxAlternatives = 1;
+  let finalTranscript = "";
+  rec.onresult = (e)=>{
+    let interim = "";
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      const r = e.results[i];
+      if (r.isFinal) finalTranscript += r[0].transcript;
+      else interim += r[0].transcript;
+    }
+    onUpdate({ transcript: (finalTranscript + " " + interim).trim(), final: false });
+  };
+  rec.onerror = (e)=>{ onUpdate({ error: e.error, final: true }); };
+  rec.onend = ()=>{ onUpdate({ transcript: finalTranscript.trim(), final: true }); };
+  activeRecognition = rec;
+  try { rec.start(); } catch(e){ onUpdate({ error: "start-failed", final: true }); }
+}
+
+/* ---------------- STUDY SESSION ---------------- */
+function startSession(){
+  let cards = selectedCards();
+  if (!cards.length) return;
+  cards = state.order === "random" ? shuffle(cards) : cards.slice().sort((a,b)=> a.book-b.book || a.order-b.order);
+  state.session = {
+    ids: cards.map(c=>c.id),
+    idx: 0,
+    revealed: false,
+    results: {},
+    mode: state.mode,
+    reciteState: "ready",
+    reciteTranscript: "",
+    reciteResult: null,
+    reciteError: null,
+    reciteLastSpokenId: null
+  };
+  state.screen = "study";
+  render();
+}
+
+function currentSessionCard(){
+  const s = state.session;
+  if (!s) return null;
+  const id = s.ids[s.idx];
+  return CARDS.find(c=>c.id===id);
+}
+
+function renderStudy(){
+  const s = state.session;
+  const card = currentSessionCard();
+  const eff = getEffectiveCard(card);
+  const wrap = el(`<div class="studywrap"></div>`);
+  const modeLabels = { quiz: "Quiz Mode", verse2ref: "Verse → Reference", recite: "Recite from Memory", ref2verse: "Reference → Verse" };
+  const top = el(`<div class="topbar">
+      <button class="iconbtn" id="exitStudy">✕</button>
+      <div style="text-align:right;">
+        <div class="sub">${modeLabels[s.mode] || "Reference → Verse"}</div>
+      </div>
+    </div>`);
+  top.querySelector("#exitStudy").addEventListener("click", ()=>{
+    if (confirm("End this study session and go back?")){ stopRecitationListening(); window.speechSynthesis && window.speechSynthesis.cancel(); state.session = null; state.screen = "home"; render(); }
+  });
+  wrap.appendChild(top);
+
+  const main = el(`<main></main>`);
+  const pct = Math.round((s.idx) / s.ids.length * 100);
+  main.appendChild(el(`<div class="progresswrap">
+      <div class="progressbar"><div style="width:${pct}%"></div></div>
+      <div class="progresstext">Card ${s.idx+1} of ${s.ids.length}</div>
+    </div>`));
+
+  if (s.mode === "recite"){
+    main.appendChild(renderReciteCard(s, card, eff));
+    wrap.appendChild(main);
+    return wrap;
+  }
+
+  const isQuiz = s.mode === "quiz";
+  // In Quiz Me mode you've handed the phone to someone else, so there's no
+  // reason to gate the answer behind a tap — they should see everything at once.
+  const revealed = s.revealed || isQuiz;
+  const showRefFirst = isQuiz || s.mode === "ref2verse";
+
+  const frontLabel = showRefFirst ? "Reference" : "Verse";
+  const backLabel = showRefFirst ? "Verse" : "Reference";
+  const verseText = displayText(card);
+  const versions = cardVersions(card);
+  const curVer = currentVersion(card);
+
+  function versionSwitcher(){
+    if (!versions.length) return null;
+    const w = el(`<div class="chiprow" style="justify-content:center;margin-top:10px;" onclick="event.stopPropagation()"></div>`);
+    if (versions.length > 1){
+      versions.forEach(v=>{
+        const chip = el(`<div class="chip ${v===curVer?"on":""}" style="padding:5px 10px;font-size:11.5px;">${esc(v)}</div>`);
+        chip.addEventListener("click", (ev)=>{ ev.stopPropagation(); tempVersion[card.id] = v; render(); });
+        w.appendChild(chip);
+      });
+    } else {
+      w.appendChild(el(`<div class="taglabel">${esc(curVer)}</div>`));
+    }
+    return w;
+  }
+
+  const fc = el(`<div class="flashcard" id="flashcard"></div>`);
+  if (!revealed){
+    fc.appendChild(el(`<div class="fc-kicker">${frontLabel}</div>`));
+    if (showRefFirst){
+      fc.appendChild(el(`<div class="fc-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+      if (eff.citation) fc.appendChild(el(`<div class="fc-topic">${esc(eff.citation)}</div>`));
+    } else {
+      fc.appendChild(el(`<div class="fc-text">${esc(verseText)}</div>`));
+      const vs = versionSwitcher(); if (vs) fc.appendChild(vs);
+    }
+    fc.appendChild(el(`<div class="fc-tap">Tap to reveal ${esc(backLabel.toLowerCase())}</div>`));
+    fc.addEventListener("click", ()=>{ s.revealed = true; render(); });
+  } else {
+    fc.appendChild(el(`<div class="fc-kicker">${frontLabel}</div>`));
+    if (showRefFirst){
+      fc.appendChild(el(`<div class="fc-ref" style="font-size:19px;">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+    } else {
+      fc.appendChild(el(`<div class="fc-text" style="font-size:16px;">${esc(verseText)}</div>`));
+    }
+    fc.appendChild(el(`<div class="fc-divider"></div>`));
+    fc.appendChild(el(`<div class="fc-kicker">${backLabel}</div>`));
+    if (showRefFirst){
+      fc.appendChild(el(`<div class="fc-text">${esc(verseText)}</div>`));
+      const vs = versionSwitcher(); if (vs) fc.appendChild(vs);
+    } else {
+      fc.appendChild(el(`<div class="fc-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+    }
+    if (eff.topic) fc.appendChild(el(`<div class="fc-topic">${esc(eff.topic)}</div>`));
+
+    if (!isQuiz){
+      const tagWrap = el(`<div class="studytags"></div>`);
+      getTags(card).forEach(t=> tagWrap.appendChild(el(`<span class="taglabel">${esc(t)}</span>`)));
+      fc.appendChild(tagWrap);
+      const editBtn = el(`<button class="linkbtn" style="margin-top:8px;">✏️ Edit this card</button>`);
+      editBtn.addEventListener("click", (ev)=>{ ev.stopPropagation(); openCardDetail(card, {startEditing:true, onClose: render}); });
+      fc.appendChild(editBtn);
+    }
+  }
+  main.appendChild(fc);
+
+  const actions = el(`<div class="studyactions"></div>`);
+  if (revealed){
+    const row = el(`<div class="rowbtns">
+        <button class="bigbtn ghost" id="wrongBtn" style="background:var(--bad-bg);color:var(--bad);border:none;">✕ Got it wrong</button>
+        <button class="bigbtn primary" id="rightBtn" style="background:var(--good-bg);color:var(--good);box-shadow:none;">✓ Got it right</button>
+      </div>`);
+    row.querySelector("#wrongBtn").addEventListener("click", ()=> markAndAdvance(card, "wrong"));
+    row.querySelector("#rightBtn").addEventListener("click", ()=> markAndAdvance(card, "correct"));
+    actions.appendChild(row);
+    if (isQuiz){
+      const skip = el(`<button class="linkbtn" style="display:block;margin:10px auto 0;">Skip for now</button>`);
+      skip.addEventListener("click", ()=> advanceSession());
+      actions.appendChild(skip);
+    }
+  } else {
+    const skip = el(`<button class="bigbtn ghost">Skip for now</button>`);
+    skip.addEventListener("click", ()=> advanceSession());
+    actions.appendChild(skip);
+  }
+  main.appendChild(actions);
+
+  wrap.appendChild(main);
+  return wrap;
+}
+
+function markAndAdvance(card, result){
+  const p = progress[card.id] || {seen:0, correct:0, wrong:0, lastResult:null, lastSeenAt:null};
+  p.seen += 1;
+  if (result === "correct") p.correct += 1; else p.wrong += 1;
+  p.lastResult = result;
+  p.lastSeenAt = Date.now();
+  progress[card.id] = p;
+  saveProgress();
+  state.session.results[card.id] = result;
+  advanceSession();
+}
+
+function advanceSession(){
+  const s = state.session;
+  stopRecitationListening();
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  s.idx += 1;
+  s.revealed = false;
+  s.reciteState = "ready";
+  s.reciteTranscript = "";
+  s.reciteResult = null;
+  s.reciteError = null;
+  if (s.idx >= s.ids.length){
+    state.screen = "summary";
+  }
+  render();
+  window.scrollTo(0,0);
+}
+
+function renderReciteCard(s, card, eff){
+  const frag = document.createDocumentFragment();
+  const fc = el(`<div class="flashcard" id="flashcard"></div>`);
+
+  if (!SPEECH_RECOGNITION_SUPPORTED){
+    fc.appendChild(el(`<div class="fc-kicker">Recite from Memory</div>`));
+    fc.appendChild(el(`<div class="fc-text" style="font-size:15px;">Voice recitation isn't supported in this browser. Try Chrome on Android or desktop, or exit and pick a different study mode.</div>`));
+    frag.appendChild(fc);
+    const backBtn = el(`<button class="bigbtn ghost" style="margin-top:14px;">End Session</button>`);
+    backBtn.addEventListener("click", ()=>{ state.session = null; state.screen = "home"; render(); });
+    frag.appendChild(backBtn);
+    return frag;
+  }
+
+  const st = s.reciteState || "ready";
+
+  // Speak the reference once per card, the first time it's shown.
+  if (s.reciteLastSpokenId !== card.id && st === "ready"){
+    s.reciteLastSpokenId = card.id;
+    speak(eff.reference || "Recite this verse");
+  }
+
+  fc.appendChild(el(`<div class="fc-kicker">Recite from Memory</div>`));
+  fc.appendChild(el(`<div class="fc-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+  if (eff.citation) fc.appendChild(el(`<div class="fc-topic">${esc(eff.citation)}</div>`));
+
+  const replayBtn = el(`<button class="linkbtn" style="margin-top:8px;">🔊 Replay reference</button>`);
+  replayBtn.addEventListener("click", ()=> speak(eff.reference || ""));
+  fc.appendChild(replayBtn);
+
+  if (st === "ready"){
+    fc.appendChild(el(`<div class="fc-tap">Tap the mic when you're ready to recite</div>`));
+  } else if (st === "listening"){
+    fc.appendChild(el(`<div class="fc-tap" style="color:var(--accent);">🎙️ Listening…</div>`));
+    if (s.reciteTranscript){
+      fc.appendChild(el(`<div class="footnote" style="margin-top:8px;font-style:italic;">"${esc(s.reciteTranscript)}"</div>`));
+    }
+  } else if (st === "error"){
+    fc.appendChild(el(`<div class="footnote" style="margin-top:10px;color:var(--bad);">${esc(s.reciteError || "Something went wrong with the microphone.")}</div>`));
+  } else if (st === "graded"){
+    const r = s.reciteResult;
+    fc.appendChild(el(`<div class="fc-divider"></div>`));
+    fc.appendChild(el(`<div style="text-align:center;margin-top:6px;">
+        <div style="font-size:38px;font-weight:800;color:${r.score>=80?"var(--good)":(r.score>=60?"var(--accent)":"var(--bad)")};">${r.score}%</div>
+        <div class="footnote" style="margin-top:2px;">${esc(scoreLabel(r.score))}</div>
+      </div>`));
+    const diffWrap = el(`<div style="margin-top:14px;line-height:1.7;font-family:var(--serif);font-size:15px;text-align:left;"></div>`);
+    r.annotated.forEach(tok=>{
+      const span = document.createElement("span");
+      span.textContent = tok.display + " ";
+      if (!tok.skip){
+        if (tok.hit) span.style.color = "var(--good)";
+        else { span.style.color = "var(--bad)"; span.style.textDecoration = "line-through"; }
+      }
+      diffWrap.appendChild(span);
+    });
+    fc.appendChild(diffWrap);
+    if (s.reciteTranscript){
+      fc.appendChild(el(`<div class="footnote" style="margin-top:10px;">You said: "${esc(s.reciteTranscript)}"</div>`));
+    }
+  }
+  frag.appendChild(fc);
+
+  const actions = el(`<div class="studyactions"></div>`);
+
+  if (st === "ready" || st === "error"){
+    const micBtn = el(`<button class="bigbtn primary">🎙️ Start Reciting</button>`);
+    micBtn.addEventListener("click", ()=> beginRecitation(s, card, eff));
+    actions.appendChild(micBtn);
+    const skip = el(`<button class="linkbtn" style="display:block;margin:10px auto 0;">Skip for now</button>`);
+    skip.addEventListener("click", ()=> advanceSession());
+    actions.appendChild(skip);
+  } else if (st === "listening"){
+    const stopBtn = el(`<button class="bigbtn ghost">⏹ Stop &amp; Grade</button>`);
+    stopBtn.addEventListener("click", ()=> stopRecitationListening());
+    actions.appendChild(stopBtn);
+  } else if (st === "graded"){
+    const r = s.reciteResult;
+    const suggestRight = r.score >= 80;
+    const row = el(`<div class="rowbtns">
+        <button class="bigbtn ghost" id="wrongBtn" style="background:var(--bad-bg);color:var(--bad);border:${suggestRight?"none":"2px solid var(--bad)"};">✕ Got it wrong</button>
+        <button class="bigbtn primary" id="rightBtn" style="background:var(--good-bg);color:var(--good);box-shadow:none;border:${suggestRight?"2px solid var(--good)":"none"};">✓ Got it right</button>
+      </div>`);
+    row.querySelector("#wrongBtn").addEventListener("click", ()=> markAndAdvance(card, "wrong"));
+    row.querySelector("#rightBtn").addEventListener("click", ()=> markAndAdvance(card, "correct"));
+    actions.appendChild(row);
+    const tryAgainBtn = el(`<button class="linkbtn" style="display:block;margin:10px auto 0;">🔁 Try again</button>`);
+    tryAgainBtn.addEventListener("click", ()=>{
+      s.reciteState = "ready";
+      s.reciteTranscript = "";
+      s.reciteResult = null;
+      render();
+    });
+    actions.appendChild(tryAgainBtn);
+    const skip2 = el(`<button class="linkbtn" style="display:block;margin:6px auto 0;">Skip for now</button>`);
+    skip2.addEventListener("click", ()=> advanceSession());
+    actions.appendChild(skip2);
+  }
+
+  frag.appendChild(actions);
+  return frag;
+}
+
+function beginRecitation(s, card, eff){
+  s.reciteState = "listening";
+  s.reciteTranscript = "";
+  s.reciteError = null;
+  render();
+  startRecitationListening((upd)=>{
+    if (state.session !== s) return; // session ended or changed while mic was active
+    if (upd.error && upd.error !== "no-speech"){
+      s.reciteState = "error";
+      s.reciteError = upd.error === "not-allowed"
+        ? "Microphone access is blocked. Check your browser's site permissions and try again."
+        : "Didn't catch that — tap the mic and try again.";
+      render();
+      return;
+    }
+    s.reciteTranscript = upd.transcript || s.reciteTranscript;
+    if (upd.final){
+      if (!s.reciteTranscript){
+        s.reciteState = "error";
+        s.reciteError = "Didn't catch that — tap the mic and try again.";
+      } else {
+        s.reciteResult = gradeRecitation(displayText(card), s.reciteTranscript);
+        s.reciteState = "graded";
+      }
+    }
+    render();
+  });
+}
+
+/* ---------------- SUMMARY ---------------- */
+function renderSummary(){
+  const s = state.session;
+  const frag = document.createDocumentFragment();
+  if (!s){
+    frag.appendChild(el(`<div class="emptystate">No session data.</div>`));
+    return frag;
+  }
+  const results = s.results;
+  const ids = Object.keys(results);
+  const correct = ids.filter(id=>results[id]==="correct").length;
+  const wrong = ids.filter(id=>results[id]==="wrong").length;
+  const pct = ids.length ? Math.round(correct/ids.length*100) : 0;
+
+  const sec = el(`<div class="section">
+      <div class="summarybig">${pct}%</div>
+      <div class="summarylabel">${correct} right · ${wrong} wrong · ${s.ids.length - ids.length} skipped</div>
+      ${s.mode === "quiz" ? `<div class="footnote" style="text-align:center;margin-top:8px;">Quiz result: ${correct}/${ids.length} correct</div>` : ""}
+      ${s.mode === "recite" ? `<div class="footnote" style="text-align:center;margin-top:8px;">Recite result: ${correct}/${ids.length} correct</div>` : ""}
+    </div>`);
+  frag.appendChild(sec);
+
+  if (wrong > 0){
+    const missedIds = ids.filter(id=>results[id]==="wrong");
+    const msec = el(`<div class="section"><h2>Missed this round</h2><div class="missedlist"></div></div>`);
+    const list = msec.querySelector(".missedlist");
+    missedIds.forEach(id=>{
+      const c = CARDS.find(x=>x.id===id);
+      if (!c) return; // card may have been deleted (e.g. a user-added verse) since the session started
+      const eff = getEffectiveCard(c);
+      list.appendChild(el(`<div class="cardlistrow" style="padding-left:0;"><div class="clr-main"><div class="clr-ref">${esc(eff.reference||TYPE_LABELS[eff.type])}</div><div class="clr-topic">${esc(effectiveCardCollectionIds(c).map(collectionLabel).join(", "))}</div></div></div>`));
+    });
+    frag.appendChild(msec);
+
+    const btn = el(`<button class="bigbtn primary" style="margin-bottom:10px;">Study Missed Again (${missedIds.length})</button>`);
+    btn.addEventListener("click", ()=>{
+      state.session = { ids: missedIds, idx:0, revealed:false, results:{}, mode: s.mode };
+      state.screen = "study";
+      render();
+    });
+    frag.appendChild(btn);
+  }
+
+  const done = el(`<button class="bigbtn ghost">Back to Setup</button>`);
+  done.addEventListener("click", ()=>{ state.session = null; state.screen = "home"; render(); });
+  frag.appendChild(done);
+  return frag;
+}
+
+/* ---------------- BROWSE (read-only) ---------------- */
+function renderBrowseTab(){
+  const frag = document.createDocumentFragment();
+
+  const collHeader = el(`<div class="section" style="padding-bottom:0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div class="footnote" style="margin:0;">Collections</div>
+        <button class="linkbtn" id="browseManageCollectionsBtn" style="padding:2px 6px;">Manage</button>
+      </div>
+    </div>`);
+  collHeader.querySelector("#browseManageCollectionsBtn").addEventListener("click", openManageCollections);
+  frag.appendChild(collHeader);
+
+  const collRow = el(`<div class="section" style="padding-top:0;padding-bottom:0;"><div class="chiprow"></div></div>`);
+  const chipRow = collRow.querySelector(".chiprow");
+  displayCollections().forEach(coll=>{
+    const chip = el(`<div class="chip ${isBrowseCollectionOn(coll.id)?"on":""}">${esc(coll.name)}</div>`);
+    chip.addEventListener("click", ()=>{
+      toggleBrowseCollectionFilter(coll.id);
+      render();
+    });
+    chipRow.appendChild(chip);
+  });
+  if (!displayCollections().length){
+    chipRow.appendChild(el(`<div class="footnote">No collections yet — tap Manage to add one.</div>`));
+  }
+  frag.appendChild(collRow);
+
+  const searchSec = el(`<div class="section">
+      <input type="search" placeholder="Search reference, text, topic, or keyword…" id="browseTabSearch">
+    </div>`);
+  const input = searchSec.querySelector("#browseTabSearch");
+  input.value = state.browse.search;
+  input.addEventListener("input", (e)=>{ state.browse.search = e.target.value; renderBrowseTabList(); });
+  frag.appendChild(searchSec);
+
+  const tags = allTagsInUse();
+  if (tags.length){
+    const topicSec = el(`<div class="section" style="padding-top:0;">
+        <div class="footnote" style="margin-bottom:6px;">Topics</div>
+        <div class="chiprow"></div>
+      </div>`);
+    const topicRow = topicSec.querySelector(".chiprow");
+    tags.forEach(t=>{
+      const chip = el(`<div class="chip ${state.browse.tags.has(t)?"on":""}">${esc(t)}</div>`);
+      chip.addEventListener("click", ()=>{
+        if (state.browse.tags.has(t)) state.browse.tags.delete(t); else state.browse.tags.add(t);
+        render();
+      });
+      topicRow.appendChild(chip);
+    });
+    frag.appendChild(topicSec);
+  }
+
+  const listSec = el(`<div class="section">
+      <div id="browseShareAllWrap" style="margin-bottom:10px;"></div>
+      <div id="browseTabListBody"></div>
+    </div>`);
+  frag.appendChild(listSec);
+  setTimeout(()=>{ renderBrowseTabList(); }, 0);
+  return frag;
+}
+
+function renderBrowseShareAllWrap(){
+  const wrap = document.getElementById("browseShareAllWrap");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  const cards = browseFilteredCards();
+  if (!cards.length) return;
+  const btn = el(`<button class="bigbtn ghost">🔗 Share these ${cards.length} verse${cards.length===1?"":"s"}</button>`);
+  btn.addEventListener("click", ()=>{
+    const title = cards.length===1 ? (getEffectiveCard(cards[0]).reference || "Verse") : `${cards.length} verses`;
+    shareCards(cards, title);
+  });
+  wrap.appendChild(btn);
+}
+
+function renderBrowseTabList(){
+  const body = document.getElementById("browseTabListBody");
+  if (!body) return;
+  body.innerHTML = "";
+  renderBrowseShareAllWrap();
+  const cards = browseFilteredCards();
+  if (!cards.length){ body.appendChild(el(`<div class="emptystate">No matches.</div>`)); return; }
+  cards.forEach(c=>{
+    const eff = getEffectiveCard(c);
+    const collNames = effectiveCardCollectionIds(c).map(collectionLabel).join(" · ");
+    const row = el(`<div class="cardlistrow" style="cursor:pointer;">
+        <div class="clr-main">
+          <div class="clr-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>
+          <div class="clr-topic">${esc(collNames)}${eff.topic? " · "+esc(eff.topic) : ""}</div>
+          <div class="clr-tags"></div>
+        </div>
+      </div>`);
+    const tagWrap = row.querySelector(".clr-tags");
+    getTags(c).forEach(t=> tagWrap.appendChild(el(`<span class="taglabel">${esc(t)}</span>`)));
+    row.addEventListener("click", ()=> openBrowseCardView(c));
+    body.appendChild(row);
+  });
+}
+
+function buildShareText(card){
+  const eff = getEffectiveCard(card);
+  const ref = eff.reference || TYPE_LABELS[eff.type];
+  const text = displayText(card);
+  let out = text ? `${ref}\n${text}` : ref;
+  if (eff.citation) out += `\n${eff.citation}`;
+  return out;
+}
+
+function shareCard(card){
+  const eff = getEffectiveCard(card);
+  const title = eff.reference || TYPE_LABELS[eff.type];
+  const text = buildShareText(card);
+  if (navigator.share){
+    navigator.share({ title, text }).catch(()=>{ /* user cancelled or unsupported — ignore */ });
+  } else {
+    openShareFallback(title, text);
+  }
+}
+
+function shareCards(cards, title){
+  const text = cards.map(buildShareText).join("\n\n—\n\n");
+  if (navigator.share){
+    navigator.share({ title, text }).catch(()=>{ /* user cancelled or unsupported — ignore */ });
+  } else {
+    openShareFallback(title, text);
+  }
+}
+
+function openShareFallback(title, text){
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Share ${esc(title)}</div>`));
+  const textBtn = el(`<button class="bigbtn ghost" style="margin-top:10px;">💬 Text Message</button>`);
+  textBtn.addEventListener("click", ()=>{ window.location.href = "sms:?&body=" + encodeURIComponent(text); });
+  sheet.appendChild(textBtn);
+  const mailBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">✉️ Email</button>`);
+  mailBtn.addEventListener("click", ()=>{ window.location.href = "mailto:?subject=" + encodeURIComponent(title) + "&body=" + encodeURIComponent(text); });
+  sheet.appendChild(mailBtn);
+  const copyBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">📋 Copy Text</button>`);
+  copyBtn.addEventListener("click", ()=>{
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=> alert("Copied to clipboard.")).catch(()=> alert("Couldn't copy — try selecting the text manually."));
+    } else {
+      alert("Copying isn't supported here — try Text Message or Email instead.");
+    }
+  });
+  sheet.appendChild(copyBtn);
+  const closeBtn = el(`<button class="bigbtn ghost" style="margin-top:14px;">Close</button>`);
+  closeBtn.addEventListener("click", ()=> overlay.remove());
+  sheet.appendChild(closeBtn);
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function openBrowseCardView(card){
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;max-height:85vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+
+  const eff = getEffectiveCard(card);
+  sheet.appendChild(el(`<div class="fc-kicker">${esc(effectiveCardCollectionIds(card).map(collectionLabel).join(" · "))}${eff.topic? " · "+esc(eff.topic):""}</div>`));
+  sheet.appendChild(el(`<div class="fc-ref" style="text-align:left;">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+
+  if (eff.type === "verse" && eff.translations && eff.translations.length){
+    const ver = currentVersion(card);
+    const found = eff.translations.find(t=>t.version===ver) || eff.translations[0];
+    sheet.appendChild(el(`<div class="fc-text" style="text-align:left;font-size:16px;margin-top:10px;">${esc(found.text)}</div>`));
+    if (eff.translations.length > 1){
+      const vsWrap = el(`<div class="chiprow" style="margin-top:10px;"></div>`);
+      eff.translations.forEach(t=>{
+        const chip = el(`<div class="chip ${t.version===ver?"on":""}">${esc(t.version)}</div>`);
+        chip.addEventListener("click", ()=>{ tempVersion[card.id] = t.version; refreshBrowseCardView(); });
+        vsWrap.appendChild(chip);
+      });
+      sheet.appendChild(vsWrap);
+    }
+  } else {
+    sheet.appendChild(el(`<div class="fc-text" style="text-align:left;font-size:16px;margin-top:10px;">${esc(eff.text)}</div>`));
+  }
+  if (eff.citation) sheet.appendChild(el(`<div class="footnote" style="margin-top:8px;">${esc(eff.citation)}</div>`));
+
+  const tags = getTags(card);
+  if (tags.length){
+    const tagWrap = el(`<div class="studytags" style="margin-top:14px;"></div>`);
+    tags.forEach(t=> tagWrap.appendChild(el(`<span class="taglabel">${esc(t)}</span>`)));
+    sheet.appendChild(tagWrap);
+  }
+
+  const shareBtn = el(`<button class="bigbtn primary" style="margin-top:18px;">🔗 Share</button>`);
+  shareBtn.addEventListener("click", ()=> shareCard(card));
+  sheet.appendChild(shareBtn);
+
+  const closeBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">Close</button>`);
+  closeBtn.addEventListener("click", ()=>{ delete tempVersion[card.id]; overlay.remove(); });
+  sheet.appendChild(closeBtn);
+
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay){ delete tempVersion[card.id]; overlay.remove(); } });
+  document.body.appendChild(overlay);
+
+  function refreshBrowseCardView(){
+    overlay.remove();
+    openBrowseCardView(card);
+  }
+}
+
+/* ---------------- EDIT & TAG ---------------- */
+let editTagSort = "original"; // "original" | "collection" | "recent"
+let editTagSelected = new Set();
+
+function getCardById(id){ return CARDS.find(c=>c.id===id); }
+
+function renderEditTag(){
+  const frag = document.createDocumentFragment();
+
+  const addSec = el(`<div class="section" style="padding-bottom:0;">
+      <button class="bigbtn ghost" id="addVerseBtn">+ Add Verse</button>
+    </div>`);
+  addSec.querySelector("#addVerseBtn").addEventListener("click", openAddVerseSheet);
+  frag.appendChild(addSec);
+
+  const searchSec = el(`<div class="section">
+      <input type="search" placeholder="Search reference, text, topic, or tag…" id="editTagSearch">
+    </div>`);
+  const input = searchSec.querySelector("#editTagSearch");
+  input.value = state.filters.search;
+  input.addEventListener("input", (e)=>{ state.filters.search = e.target.value; renderEditTagList(); });
+  frag.appendChild(searchSec);
+
+  const sortSec = el(`<div class="section" style="padding-top:0;">
+      <div class="footnote" style="margin-bottom:6px;">Sort by</div>
+      <div class="segrow" id="editTagSortSeg">
+        <button data-sort="original">Original Order</button>
+        <button data-sort="collection">Collection</button>
+        <button data-sort="recent">Recently Added</button>
+      </div>
+    </div>`);
+  sortSec.querySelectorAll("#editTagSortSeg button").forEach(b=>{
+    if (b.dataset.sort === editTagSort) b.classList.add("on");
+    b.addEventListener("click", ()=>{ editTagSort = b.dataset.sort; render(); });
+  });
+  frag.appendChild(sortSec);
+
+  const listSec = el(`<div class="section">
+      <div id="editTagBulkBar"></div>
+      <div id="editTagListBody"></div>
+    </div>`);
+  frag.appendChild(listSec);
+  setTimeout(()=>{ renderEditTagList(); renderEditTagBulkBar(); }, 0);
+  return frag;
+}
+
+function renderEditTagBulkBar(){
+  const bar = document.getElementById("editTagBulkBar");
+  if (!bar) return;
+  bar.innerHTML = "";
+  if (!editTagSelected.size) return;
+  const wrap = el(`<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--surface-2);border-radius:10px;flex-wrap:wrap;">
+      <div class="footnote" style="margin:0;">${editTagSelected.size} selected</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="smallghost" id="bulkAddCollBtn">+ Collection</button>
+        <button class="smallghost" id="bulkAddTagBtn">+ Tag</button>
+        <button class="smallghost" id="bulkClearBtn">Clear</button>
+      </div>
+    </div>`);
+  wrap.querySelector("#bulkAddCollBtn").addEventListener("click", openBulkCollectionPicker);
+  wrap.querySelector("#bulkAddTagBtn").addEventListener("click", openBulkTagPicker);
+  wrap.querySelector("#bulkClearBtn").addEventListener("click", ()=>{ editTagSelected.clear(); renderEditTagList(); renderEditTagBulkBar(); });
+  bar.appendChild(wrap);
+}
+
+function openBulkCollectionPicker(){
+  const ids = Array.from(editTagSelected);
+  if (!ids.length) return;
+  const chosen = new Set();
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Add ${ids.length} verse${ids.length===1?"":"s"} to collection(s)</div>`));
+  if (!collections.length){
+    sheet.appendChild(el(`<div class="footnote" style="margin:10px 0;">No collections yet — add one from Study &gt; Manage first.</div>`));
+  } else {
+    const chipRow = el(`<div class="chiprow" style="margin-top:10px;"></div>`);
+    collections.forEach(coll=>{
+      const chip = el(`<div class="chip">${esc(coll.name)}</div>`);
+      chip.addEventListener("click", ()=>{
+        if (chosen.has(coll.id)) { chosen.delete(coll.id); chip.classList.remove("on"); }
+        else { chosen.add(coll.id); chip.classList.add("on"); }
+      });
+      chipRow.appendChild(chip);
+    });
+    sheet.appendChild(chipRow);
+  }
+  const applyBtn = el(`<button class="bigbtn primary" style="margin-top:16px;">Apply</button>`);
+  applyBtn.addEventListener("click", ()=>{
+    if (chosen.size){
+      ids.forEach(id=>{
+        const card = getCardById(id);
+        if (!card) return;
+        const cur = new Set(rawCardCollectionIds(card));
+        chosen.forEach(x=>cur.add(x));
+        setCardCollections(id, Array.from(cur));
+      });
+    }
+    editTagSelected.clear();
+    overlay.remove();
+    renderEditTagList();
+    renderEditTagBulkBar();
+  });
+  sheet.appendChild(applyBtn);
+  const cancelBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">Cancel</button>`);
+  cancelBtn.addEventListener("click", ()=> overlay.remove());
+  sheet.appendChild(cancelBtn);
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function openBulkTagPicker(){
+  const ids = Array.from(editTagSelected);
+  if (!ids.length) return;
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Add tag(s) to ${ids.length} verse${ids.length===1?"":"s"}</div>`));
+  const inputRow = el(`<input type="text" placeholder="Tag(s), comma separated" style="margin-top:10px;">`);
+  sheet.appendChild(inputRow);
+  const applyBtn = el(`<button class="bigbtn primary" style="margin-top:16px;">Apply</button>`);
+  applyBtn.addEventListener("click", ()=>{
+    const additions = inputRow.value.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    if (additions.length){
+      ids.forEach(id=>{
+        const card = getCardById(id);
+        if (!card) return;
+        const cur = new Set(getTags(card));
+        additions.forEach(a=>cur.add(a));
+        setTags(id, Array.from(cur));
+      });
+    }
+    editTagSelected.clear();
+    overlay.remove();
+    renderEditTagList();
+    renderEditTagBulkBar();
+  });
+  sheet.appendChild(applyBtn);
+  const cancelBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">Cancel</button>`);
+  cancelBtn.addEventListener("click", ()=> overlay.remove());
+  sheet.appendChild(cancelBtn);
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function openAddVerseSheet(){
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Add a new verse</div>`));
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Reference</div>`));
+  const refInput = el(`<input type="text" placeholder="e.g. Philippians 4:13" id="newVerseRef">`);
+  sheet.appendChild(refInput);
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Verse text</div>`));
+  const textArea = el(`<textarea rows="4" placeholder="Type or paste the verse text…" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:var(--serif);font-size:14.5px;" id="newVerseText"></textarea>`);
+  sheet.appendChild(textArea);
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Translation</div>`));
+  const verInput = el(`<input type="text" placeholder="e.g. NIV, ESV, KJV" id="newVerseVersion" value="NIV">`);
+  sheet.appendChild(verInput);
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Topic / session label (optional)</div>`));
+  const topicInput = el(`<input type="text" id="newVerseTopic">`);
+  sheet.appendChild(topicInput);
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Citation (optional)</div>`));
+  const citeInput = el(`<input type="text" id="newVerseCitation">`);
+  sheet.appendChild(citeInput);
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:14px 0 6px;">Collections</div>`));
+  const chosenColl = new Set();
+  if (!collections.length){
+    sheet.appendChild(el(`<div class="footnote">No collections yet — you can tag this later from Edit &amp; Tag.</div>`));
+  } else {
+    const chipRow = el(`<div class="chiprow"></div>`);
+    collections.forEach(coll=>{
+      const chip = el(`<div class="chip">${esc(coll.name)}</div>`);
+      chip.addEventListener("click", ()=>{
+        if (chosenColl.has(coll.id)) { chosenColl.delete(coll.id); chip.classList.remove("on"); }
+        else { chosenColl.add(coll.id); chip.classList.add("on"); }
+      });
+      chipRow.appendChild(chip);
+    });
+    sheet.appendChild(chipRow);
+  }
+
+  sheet.appendChild(el(`<div class="footnote" style="margin:14px 0 4px;">Tags (optional, comma separated)</div>`));
+  const tagInput = el(`<input type="text" id="newVerseTags">`);
+  sheet.appendChild(tagInput);
+
+  const saveBtn = el(`<button class="bigbtn primary" style="margin-top:16px;">Save verse</button>`);
+  saveBtn.addEventListener("click", ()=>{
+    if (!refInput.value.trim() || !textArea.value.trim()){
+      alert("Please fill in at least a reference and the verse text.");
+      return;
+    }
+    const tags = tagInput.value.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+    addUserCard({
+      reference: refInput.value,
+      text: textArea.value,
+      version: verInput.value,
+      topic: topicInput.value,
+      citation: citeInput.value,
+      collectionIds: Array.from(chosenColl),
+      tags
+    });
+    overlay.remove();
+    render();
+  });
+  sheet.appendChild(saveBtn);
+
+  const cancelBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">Cancel</button>`);
+  cancelBtn.addEventListener("click", ()=> overlay.remove());
+  sheet.appendChild(cancelBtn);
+
+  overlay.appendChild(sheet);
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function renderEditTagList(){
+  const body = document.getElementById("editTagListBody");
+  if (!body) return;
+  body.innerHTML = "";
+  const q = state.filters.search.trim().toLowerCase();
+  let cards = CARDS;
+  if (q){
+    cards = cards.filter(c=>{
+      const eff = getEffectiveCard(c);
+      const collNames = effectiveCardCollectionIds(c).map(collectionLabel).join(" ");
+      const hay = [eff.reference, allTextForSearch(c), eff.topic, eff.citation, getTags(c).join(" "), collNames]
+        .filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  if (!cards.length){ body.appendChild(el(`<div class="emptystate">No matches.</div>`)); return; }
+
+  if (editTagSort === "collection"){
+    cards = cards.slice().sort((a,b)=>{
+      const la = collectionLabel(effectiveCardCollectionIds(a)[0]);
+      const lb = collectionLabel(effectiveCardCollectionIds(b)[0]);
+      return la.localeCompare(lb) || 0;
+    });
+  } else if (editTagSort === "recent"){
+    cards = cards.slice().sort((a,b)=> cardCreatedAt(b) - cardCreatedAt(a));
+  }
+
+  let lastGroup = null;
+  cards.forEach(c=>{
+    if (editTagSort === "collection"){
+      const groupLabel = collectionLabel(effectiveCardCollectionIds(c)[0]);
+      if (groupLabel !== lastGroup){
+        lastGroup = groupLabel;
+        body.appendChild(el(`<div class="footnote" style="margin:12px 0 2px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">${esc(groupLabel)}</div>`));
+      }
+    }
+    const eff = getEffectiveCard(c);
+    const p = getProg(c.id);
+    const dotClass = p.seen===0 ? "new" : (p.lastResult==="wrong" ? "bad" : "good");
+    const verLabel = c.type==="verse" ? (currentVersion(c) || "") : "";
+    const collNames = effectiveCardCollectionIds(c).map(collectionLabel).join(" · ");
+    const recentNote = editTagSort === "recent" && c.createdAt ? " · " + relativeDateLabel(c.createdAt) : "";
+    const row = el(`<div class="cardlistrow" style="cursor:pointer;">
+        <input type="checkbox" class="bulkCheck">
+        <span class="dot ${dotClass}"></span>
+        <div class="clr-main">
+          <div class="clr-ref">${esc(eff.reference || TYPE_LABELS[eff.type])}${verLabel?` <span class="footnote">(${esc(verLabel)})</span>`:""}${isEdited(c.id)?' <span class="footnote">· edited</span>':""}${isUserAdded(c.id)?' <span class="footnote">· added by you</span>':""}</div>
+          <div class="clr-topic">${esc(collNames)}${eff.topic? " · "+esc(eff.topic) : ""}${p.seen? " · seen "+p.seen+"x":""}${recentNote}</div>
+          <div class="clr-tags"></div>
+        </div>
+      </div>`);
+    const checkbox = row.querySelector(".bulkCheck");
+    checkbox.checked = editTagSelected.has(c.id);
+    checkbox.addEventListener("click", (e)=> e.stopPropagation());
+    checkbox.addEventListener("change", (e)=>{
+      if (e.target.checked) editTagSelected.add(c.id); else editTagSelected.delete(c.id);
+      renderEditTagBulkBar();
+    });
+    const tagWrap = row.querySelector(".clr-tags");
+    getTags(c).forEach(t=> tagWrap.appendChild(el(`<span class="taglabel">${esc(t)}</span>`)));
+    row.addEventListener("click", (e)=>{ if (e.target === checkbox) return; openCardDetail(c); });
+    body.appendChild(row);
+  });
+}
+
+function openCardDetail(card, opts){
+  opts = opts || {};
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;max-height:88vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 18px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+
+  let editing = !!opts.startEditing;
+
+  function closeSheet(){
+    overlay.remove();
+    renderEditTagList();
+    if (typeof opts.onClose === "function") opts.onClose();
+  }
+  overlay.addEventListener("click", (e)=>{ if (e.target===overlay) closeSheet(); });
+
+  function draw(){
+    sheet.innerHTML = "";
+    sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+    if (editing) drawEditMode(); else drawViewMode();
+  }
+
+  function drawViewMode(){
+    const eff = getEffectiveCard(card);
+    sheet.appendChild(el(`<div class="fc-kicker">${esc(effectiveCardCollectionIds(card).map(collectionLabel).join(" · "))}${eff.topic? " · "+esc(eff.topic):""}</div>`));
+    sheet.appendChild(el(`<div class="fc-ref" style="text-align:left;">${esc(eff.reference || TYPE_LABELS[eff.type])}</div>`));
+
+    if (eff.type === "verse" && eff.translations && eff.translations.length){
+      const ver = currentVersion(card);
+      const found = eff.translations.find(t=>t.version===ver) || eff.translations[0];
+      sheet.appendChild(el(`<div class="fc-text" style="text-align:left;font-size:16px;margin-top:10px;">${esc(found.text)}</div>`));
+      if (eff.translations.length > 1){
+        const vsWrap = el(`<div class="chiprow" style="margin-top:10px;"></div>`);
+        eff.translations.forEach(t=>{
+          const chip = el(`<div class="chip ${t.version===ver?"on":""}">${esc(t.version)}${t.version===eff.defaultVersion?" <small>★</small>":""}</div>`);
+          chip.addEventListener("click", ()=>{ tempVersion[card.id] = t.version; draw(); });
+          vsWrap.appendChild(chip);
+        });
+        sheet.appendChild(vsWrap);
+        sheet.appendChild(el(`<div class="footnote" style="margin-top:4px;">★ = your default for quizzing. Tap a version to preview it here.</div>`));
+      } else {
+        sheet.appendChild(el(`<div class="footnote" style="margin-top:6px;">Version: ${esc(eff.translations[0].version)}</div>`));
+      }
+    } else {
+      sheet.appendChild(el(`<div class="fc-text" style="text-align:left;font-size:16px;margin-top:10px;">${esc(eff.text)}</div>`));
+    }
+    if (eff.citation) sheet.appendChild(el(`<div class="footnote" style="margin-top:8px;">${esc(eff.citation)}</div>`));
+
+    const p = getProg(card.id);
+    sheet.appendChild(el(`<div class="footnote" style="margin-top:14px;">Seen ${p.seen}x · ${p.correct} correct · ${p.wrong} wrong${p.lastSeenAt? " · last studied " + new Date(p.lastSeenAt).toLocaleDateString(): ""}</div>`));
+
+    const collSec = el(`<div class="browsedetail"></div>`);
+    collSec.appendChild(el(`<div class="footnote" style="margin-top:14px;margin-bottom:6px;">Collections</div>`));
+    const collWrap = el(`<div class="chiprow" id="detailCollWrap"></div>`);
+    function drawCollChips(){
+      collWrap.innerHTML = "";
+      const assigned = new Set(rawCardCollectionIds(card));
+      if (!collections.length){
+        collWrap.appendChild(el(`<div class="footnote">No collections yet — add one from Study &gt; Manage.</div>`));
+        return;
+      }
+      collections.forEach(coll=>{
+        const on = assigned.has(coll.id);
+        const chip = el(`<div class="chip ${on?"on":""}">${esc(coll.name)}</div>`);
+        chip.addEventListener("click", ()=>{
+          const cur = new Set(rawCardCollectionIds(card));
+          if (cur.has(coll.id)) cur.delete(coll.id); else cur.add(coll.id);
+          setCardCollections(card.id, Array.from(cur));
+          drawCollChips();
+        });
+        collWrap.appendChild(chip);
+      });
+    }
+    drawCollChips();
+    collSec.appendChild(collWrap);
+    collSec.appendChild(el(`<div class="footnote" style="margin-top:6px;">Tap to assign this verse to one or more collections. Unassigned verses show as Uncategorized.</div>`));
+    sheet.appendChild(collSec);
+
+    const tagSec = el(`<div class="browsedetail"></div>`);
+    tagSec.appendChild(el(`<div class="footnote" style="margin-top:14px;margin-bottom:6px;">Tags</div>`));
+    const tagWrap = el(`<div class="chiprow" id="detailTagWrap"></div>`);
+    function drawTags(){
+      tagWrap.innerHTML = "";
+      getTags(card).forEach(t=>{
+        const chip = el(`<div class="chip on">${esc(t)} <small>✕</small></div>`);
+        chip.addEventListener("click", ()=>{
+          const cur = getTags(card).filter(x=>x!==t);
+          setTags(card.id, cur);
+          drawTags();
+        });
+        tagWrap.appendChild(chip);
+      });
+    }
+    drawTags();
+    tagSec.appendChild(tagWrap);
+    const addRow = el(`<div class="tageditrow">
+        <input type="text" placeholder="Add tag(s), comma separated" id="newTagInput">
+        <button class="smallghost" id="addTagBtn">Add</button>
+      </div>`);
+    addRow.querySelector("#addTagBtn").addEventListener("click", ()=>{
+      const inp = addRow.querySelector("#newTagInput");
+      const raw = inp.value.trim();
+      if (!raw) return;
+      const additions = raw.split(",").map(x=>x.trim().toLowerCase()).filter(Boolean);
+      const cur = new Set(getTags(card));
+      additions.forEach(a=>cur.add(a));
+      setTags(card.id, Array.from(cur));
+      inp.value = "";
+      drawTags();
+    });
+    tagSec.appendChild(addRow);
+    sheet.appendChild(tagSec);
+
+    const editBtn = el(`<button class="bigbtn ghost" style="margin-top:16px;">✏️ Edit this card</button>`);
+    editBtn.addEventListener("click", ()=>{ editing = true; draw(); });
+    sheet.appendChild(editBtn);
+
+    if (p.seen > 0){
+      const resetBtn = el(`<button class="linkbtn" style="margin-top:10px;">Reset stats for this card</button>`);
+      resetBtn.addEventListener("click", ()=>{
+        delete progress[card.id];
+        saveProgress();
+        draw();
+      });
+      sheet.appendChild(resetBtn);
+    }
+
+    if (isUserAdded(card.id)){
+      const deleteBtn = el(`<button class="linkbtn" style="margin-top:10px;color:var(--bad);">🗑️ Delete this verse</button>`);
+      deleteBtn.addEventListener("click", ()=>{
+        if (confirm(`Delete "${eff.reference || "this verse"}"? This can't be undone.`)){
+          deleteUserCard(card.id);
+          overlay.remove();
+          renderEditTagList();
+          if (typeof opts.onClose === "function") opts.onClose();
+        }
+      });
+      sheet.appendChild(deleteBtn);
+    }
+
+    const closeBtn = el(`<button class="bigbtn ghost" style="margin-top:10px;">Close</button>`);
+    closeBtn.addEventListener("click", closeSheet);
+    sheet.appendChild(closeBtn);
+  }
+
+  function drawEditMode(){
+    const eff = getEffectiveCard(card);
+    sheet.appendChild(el(`<div class="footnote" style="margin-bottom:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;">Editing · ${esc(effectiveCardCollectionIds(card).map(collectionLabel).join(", "))}</div>`));
+
+    const refLabel = eff.type === "verse" ? "Reference" : "Title";
+    sheet.appendChild(el(`<div class="footnote" style="margin-bottom:4px;">${refLabel}</div>`));
+    const refInput = el(`<input type="text" id="editRef">`);
+    refInput.value = eff.reference || "";
+    sheet.appendChild(refInput);
+
+    sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Topic / session label (optional)</div>`));
+    const topicInput = el(`<input type="text" id="editTopic">`);
+    topicInput.value = eff.topic || "";
+    sheet.appendChild(topicInput);
+
+    let citationInput = null;
+    if (eff.type === "commitment" || eff.citation){
+      sheet.appendChild(el(`<div class="footnote" style="margin:10px 0 4px;">Citation (optional)</div>`));
+      citationInput = el(`<input type="text" id="editCitation">`);
+      citationInput.value = eff.citation || "";
+      sheet.appendChild(citationInput);
+    }
+
+    let translationRows = [];
+    let plainTextArea = null;
+
+    if (eff.type === "verse"){
+      sheet.appendChild(el(`<div class="footnote" style="margin:14px 0 6px;font-weight:700;">Translations</div>`));
+      const transWrap = el(`<div id="transWrap"></div>`);
+      sheet.appendChild(transWrap);
+
+      const source = (eff.translations && eff.translations.length) ? eff.translations : [{version:"NIV", text:""}];
+      let defaultVer = eff.defaultVersion || source[0].version;
+
+      function drawTranslationRows(){
+        transWrap.innerHTML = "";
+        translationRows = [];
+        source.forEach((t, i)=>{
+          const row = el(`<div style="border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;"></div>`);
+          const headRow = el(`<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;"></div>`);
+          const verInput = el(`<input type="text" placeholder="Version (e.g. NIV, ESV, KJV)" style="flex:1;">`);
+          verInput.value = t.version || "";
+          const defRadio = el(`<label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-dim);white-space:nowrap;"><input type="radio" name="defaultVer" ${t.version===defaultVer?"checked":""}> Default</label>`);
+          defRadio.querySelector("input").addEventListener("change", ()=>{ defaultVer = verInput.value.trim() || t.version; });
+          verInput.addEventListener("input", ()=>{
+            // keep default radio tracking the (possibly renamed) version live
+            if (defRadio.querySelector("input").checked) defaultVer = verInput.value.trim();
+          });
+          headRow.appendChild(verInput);
+          headRow.appendChild(defRadio);
+          if (source.length > 1){
+            const delBtn = el(`<button class="smallghost" type="button">✕</button>`);
+            delBtn.addEventListener("click", ()=>{ source.splice(i,1); drawTranslationRows(); });
+            headRow.appendChild(delBtn);
+          }
+          row.appendChild(headRow);
+          const textArea = el(`<textarea rows="4" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:var(--serif);font-size:14.5px;"></textarea>`);
+          textArea.value = t.text || "";
+          row.appendChild(textArea);
+          transWrap.appendChild(row);
+          translationRows.push({verInput, textArea, radio: defRadio.querySelector("input"), origVersion: t.version});
+        });
+      }
+      drawTranslationRows();
+
+      const addVerBtn = el(`<button class="linkbtn" style="margin-bottom:10px;">+ Add another translation</button>`);
+      addVerBtn.addEventListener("click", ()=>{
+        source.push({version:"", text:""});
+        drawTranslationRows();
+      });
+      sheet.appendChild(addVerBtn);
+    } else {
+      sheet.appendChild(el(`<div class="footnote" style="margin:14px 0 4px;">Text</div>`));
+      plainTextArea = el(`<textarea rows="6" style="width:100%;padding:9px 10px;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);font-family:var(--serif);font-size:14.5px;white-space:pre-line;"></textarea>`);
+      plainTextArea.value = eff.text || "";
+      sheet.appendChild(plainTextArea);
+    }
+
+    const saveBtn = el(`<button class="bigbtn primary" style="margin-top:14px;">Save changes</button>`);
+    saveBtn.addEventListener("click", ()=>{
+      const patch = {
+        reference: refInput.value.trim() || null,
+        topic: topicInput.value.trim() || null
+      };
+      if (citationInput) patch.citation = citationInput.value.trim() || null;
+
+      if (eff.type === "verse"){
+        const trans = translationRows
+          .map(r=>({version: r.verInput.value.trim(), text: r.textArea.value.trim()}))
+          .filter(t=>t.version && t.text);
+        if (!trans.length){
+          alert("Please keep at least one translation with a version name and text.");
+          return;
+        }
+        const checkedRow = translationRows.find(r=>r.radio.checked);
+        let defVer = checkedRow ? checkedRow.verInput.value.trim() : trans[0].version;
+        if (!trans.some(t=>t.version===defVer)) defVer = trans[0].version;
+        patch.translations = trans;
+        patch.defaultVersion = defVer;
+      } else {
+        patch.text = plainTextArea.value;
+      }
+
+      saveCardEdit(card.id, patch);
+      delete tempVersion[card.id];
+      editing = false;
+      draw();
+    });
+    sheet.appendChild(saveBtn);
+
+    const cancelBtn = el(`<button class="bigbtn ghost" style="margin-top:8px;">Cancel</button>`);
+    cancelBtn.addEventListener("click", ()=>{ editing = false; draw(); });
+    sheet.appendChild(cancelBtn);
+
+    if (isEdited(card.id)){
+      const resetBtn = el(`<button class="linkbtn" style="margin-top:10px;">Undo my edits — restore original text</button>`);
+      resetBtn.addEventListener("click", ()=>{
+        if (confirm("Discard your edits to this card and restore the original text?")){
+          resetCardEdit(card.id);
+          delete tempVersion[card.id];
+          editing = false;
+          draw();
+        }
+      });
+      sheet.appendChild(resetBtn);
+    }
+  }
+
+  draw();
+}
+
+/* ---------------- SETTINGS ---------------- */
+function renderSettings(){
+  const frag = document.createDocumentFragment();
+
+  const about = el(`<div class="section">
+      <h2>About this deck</h2>
+      <div class="footnote">
+        ${CARDS.length} cards across ${collections.length} collection${collections.length===1?"":"s"}${userCards.length? ` (${userCards.length} added by you)` : ""}.<br>
+        Built ${BUILT_DATE} · v${APP_VERSION}<br><br>
+        Everything you do here — progress, tags, collections, verses you've added, card edits, translation choices, custom study sets — is saved only in this browser, on this device, tied to this exact file. Keep this file where you saved it (Files app / Home Screen) rather than re-downloading a fresh copy, or your saved changes won't carry over.<br><br>
+        Use Edit &amp; Tag to add your own verses, assign collections, or fix a typo. Use Browse for a clean, read-only view you can search by topic or share.
+      </div>
+    </div>`);
+  frag.appendChild(about);
+
+  const backup = el(`<div class="section">
+      <h2>Backup your progress</h2>
+      <div class="footnote" style="margin-bottom:10px;">Export a small file with your tags, collections, card edits, translations, and correct/wrong history. If you ever lose this app or your browser clears its storage, importing this file restores everything.</div>
+      <div class="rowbtns">
+        <button class="bigbtn ghost" id="exportBtn">Export backup</button>
+      </div>
+      <div style="margin-top:10px;">
+        <label class="bigbtn ghost" style="display:block;text-align:center;">Import backup
+          <input type="file" accept="application/json" id="importFile" style="display:none;">
+        </label>
+      </div>
+    </div>`);
+  backup.querySelector("#exportBtn").addEventListener("click", exportBackup);
+  backup.querySelector("#importFile").addEventListener("change", importBackup);
+  frag.appendChild(backup);
+
+  const danger = el(`<div class="section">
+      <h2>Reset</h2>
+      <button class="bigbtn ghost" id="resetProgressBtn" style="color:var(--bad);">Clear all progress</button>
+      <div class="footnote" style="margin-top:8px;margin-bottom:14px;">This clears correct/wrong history for every card. Your tags and edits are kept.</div>
+      <button class="bigbtn ghost" id="resetEditsBtn" style="color:var(--bad);">Undo all card edits</button>
+      <div class="footnote" style="margin-top:8px;">Restores every card's original reference, text, and translations. Progress and tags are kept.</div>
+    </div>`);
+  danger.querySelector("#resetProgressBtn").addEventListener("click", ()=>{
+    if (confirm("Clear all study progress? This can't be undone (export a backup first if you want to keep it).")){
+      progress = {};
+      saveProgress();
+      render();
+    }
+  });
+  danger.querySelector("#resetEditsBtn").addEventListener("click", ()=>{
+    if (confirm("Undo every edit you've made to card text/references/translations, restoring the originals? This can't be undone (export a backup first if you want to keep it).")){
+      overrides = {};
+      saveOverrides();
+      render();
+    }
+  });
+  frag.appendChild(danger);
+
+  return frag;
+}
+
+function exportBackup(){
+  const data = {
+    exportedAt: new Date().toISOString(),
+    version: APP_VERSION,
+    progress, tags: userTags, overrides,
+    collections, cardCollections, userCards
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "verse-flashcards-backup-" + new Date().toISOString().slice(0,10) + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+
+function importBackup(e){
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if (data.progress) { progress = Object.assign({}, progress, data.progress); saveProgress(); }
+      if (data.tags) { userTags = Object.assign({}, userTags, data.tags); saveTags(); }
+      if (data.overrides) { overrides = Object.assign({}, overrides, data.overrides); saveOverrides(); }
+      if (Array.isArray(data.collections)) { collections = data.collections; saveCollections(); }
+      if (data.cardCollections) { cardCollections = Object.assign({}, cardCollections, data.cardCollections); saveCardCollections(); }
+      if (Array.isArray(data.userCards)) {
+        data.userCards.forEach(c=>{
+          if (!userCards.some(x=>x.id===c.id)){
+            userCards.push(c);
+            CARDS.push(c);
+          }
+        });
+        saveUserCards();
+      }
+      alert("Backup imported.");
+      render();
+    } catch(err){
+      alert("Couldn't read that file. Make sure it's a backup exported from this app.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+}
+
+/* ---------------- onboarding ---------------- */
+function maybeShowOnboarding(){
+  if (lsGet(LS_ONBOARDED, false)) return;
+  const overlay = el(`<div style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:flex;align-items:flex-end;"></div>`);
+  const sheet = el(`<div style="background:var(--surface);width:100%;border-radius:18px 18px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));"></div>`);
+  sheet.appendChild(el(`<div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>`));
+  sheet.appendChild(el(`<div class="fc-kicker" style="text-align:left;">Welcome</div>`));
+  sheet.appendChild(el(`<div class="fc-ref" style="text-align:left;font-size:19px;">Four tabs, two ways to use this</div>`));
+  sheet.appendChild(el(`<div class="footnote" style="margin-top:14px;line-height:1.5;">
+      <b>🏠 Study</b> — pick collections and quiz yourself (or hand your phone to someone else) to memorize verses.<br><br>
+      <b>📖 Browse</b> — a clean, read-only way to look verses up by collection or topic and share them — no editing.<br><br>
+      <b>🏷️ Edit &amp; Tag</b> — add new verses, tag them, sort them, and manage everything.<br><br>
+      <b>⚙️ Settings</b> — back up your progress, tags, and verses to a file.
+    </div>`));
+  const gotIt = el(`<button class="bigbtn primary" style="margin-top:18px;">Got it</button>`);
+  gotIt.addEventListener("click", ()=>{ lsSet(LS_ONBOARDED, true); overlay.remove(); });
+  sheet.appendChild(gotIt);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+}
+
+/* ---------------- init ---------------- */
+render();
+maybeShowOnboarding();
+
+</script>
+</body>
+</html>
